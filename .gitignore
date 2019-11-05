@@ -1,0 +1,5 @@
+# python cache
+*.pyc
+
+# local cache of the scraped data
+*.json
