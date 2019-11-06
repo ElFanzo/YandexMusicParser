@@ -5,6 +5,11 @@ from grab import Grab
 
 
 class MusicParser:
+    """Collects data (artists, genres, duration, tracks count) from
+    the Yandex Music site. It works only for the public account.
+
+    :param login: Yandex Music account's login
+    """
     def __init__(self, login: str):
         self.login = login
         self.artists = None
@@ -20,6 +25,7 @@ class MusicParser:
         self.__run()
 
     def __run(self):
+        """Perform main actions."""
         if not self.json:
             self.__connect()
             self.__get_json()
@@ -33,6 +39,7 @@ class MusicParser:
         self.tracks_count = self.__get_tracks_count()
 
     def __parse(self):
+        """Parse JSON data."""
         artists = Counter()
         genres = Counter()
         total_ms = 0
@@ -52,6 +59,11 @@ class MusicParser:
 
     @staticmethod
     def __format_ms(total_ms: int) -> str:
+        """Format milliseconds to the string.
+
+        :param total_ms: a number of milliseconds
+        :return: "%H h. %M min. %S sec." format string
+        """
         seconds = total_ms // 1000
         minutes = seconds // 60
         hours = minutes // 60
@@ -59,6 +71,7 @@ class MusicParser:
         return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
 
     def __get_local_copy(self):
+        """Get locally cached JSON file, if it exists."""
         try:
             with open(f"cache/{self.login}.json", encoding="utf-8") as file:
                 return json.load(file)
@@ -66,6 +79,7 @@ class MusicParser:
             return None
 
     def __connect(self):
+        """Connect to the Yandex Music site."""
         url = ("https://music.yandex.ru/handlers/playlist.jsx"
                f"?owner={self.login}&kinds=3")
         self.__grab = Grab(transport="urllib3")
@@ -75,6 +89,7 @@ class MusicParser:
         self.json = self.__grab.doc.json
 
     def __save_json(self):
+        """Cache JSON file to the disk."""
         try:
             os.mkdir("cache")
         except FileExistsError:
