@@ -101,7 +101,7 @@ class MusicParser:
         except FileExistsError:
             pass
 
-        if f"{self.login}.json" in os.listdir("cache") and not update:
+        if os.path.exists(f"cache/{self.login}.json") and not update:
             return
 
         with open(f"cache/{self.login}.json", "w", encoding="utf-8") as file:
