@@ -41,6 +41,14 @@ class MusicParser:
 
         return artists, genres, total_ms
 
+    @staticmethod
+    def __format_ms(total_ms: int) -> str:
+        seconds = total_ms // 1000
+        minutes = seconds // 60
+        hours = minutes // 60
+
+        return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
+
     def __get_local_copy(self):
         try:
             with open(f"cache/{self.login}.json", encoding="utf-8") as file:
