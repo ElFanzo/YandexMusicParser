@@ -23,6 +23,24 @@ class MusicParser:
 
         self.__save_json()
 
+    def __parse(self):
+        artists = Counter()
+        genres = Counter()
+        total_ms = 0
+
+        for track in self.__playlist["tracks"]:
+            for artist in track["artists"]:
+                artists.update({f"{artist['name']}": 1})
+
+            for album in track["albums"]:
+                genre = album.get("genre")
+                if genre:
+                    genres.update({f"{genre}": 1})
+
+            total_ms += track["durationMs"]
+
+        return artists, genres, total_ms
+
     def __get_local_copy(self):
         try:
             with open(f"cache/{self.login}.json", encoding="utf-8") as file:
