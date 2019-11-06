@@ -66,8 +66,10 @@ class MusicParser:
             return None
 
     def __connect(self):
+        url = ("https://music.yandex.ru/handlers/playlist.jsx"
+               f"?owner={self.login}&kinds=3")
         self.__grab = Grab(transport="urllib3")
-        self.__grab.go(f"https://music.yandex.ru/handlers/playlist.jsx?owner={self.login}&kinds=3")
+        self.__grab.go(url)
 
     def __get_json(self):
         self.json = self.__grab.doc.json
