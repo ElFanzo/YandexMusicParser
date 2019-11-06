@@ -1,3 +1,4 @@
+import os
 import json
 from collections import Counter
 from grab import Grab
@@ -18,12 +19,11 @@ class MusicParser:
 
         self.__tracks = self.__get_tracks()
 
-        if not self.json:
-            self.__save_json()
+        self.__save_json()
 
     def __get_local_copy(self):
         try:
-            with open(f"local_copy_{self.login}.json", encoding="utf-8") as file:
+            with open(f"cache/{self.login}.json", encoding="utf-8") as file:
                 return json.load(file)
         except (FileNotFoundError, json.JSONDecodeError):
             return None
@@ -36,7 +36,15 @@ class MusicParser:
         self.json = self.__grab.doc.json
 
     def __save_json(self):
-        with open(f"local_copy_{self.login}.json", "w", encoding="utf-8") as file:
+        try:
+            os.mkdir("cache")
+        except FileExistsError:
+            pass
+
+        if f"{self.login}.json" in os.listdir("cache"):
+            return
+
+        with open(f"cache/{self.login}.json", "w", encoding="utf-8") as file:
             json.dump(self.json, file, ensure_ascii=False)
 
     def __get_tracks(self):
