@@ -89,3 +89,6 @@ class MusicParser:
             raise
 
         return playlist
+
+    def __get_tracks_count(self):
+        return self.__playlist["trackCount"]
