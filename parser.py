@@ -17,11 +17,20 @@ class MusicParser:
         self.__grab = None
         self.__playlist = None
 
+        self.__run()
+
+    def __run(self):
         if not self.json:
             self.__connect()
             self.__get_json()
 
+        self.__playlist = self.__get_playlist()
+
         self.__save_json()
+
+        self.artists, self.genres, self.total_duration_ms = self.__parse()
+        self.total_duration = MusicParser.__format_ms(self.total_duration_ms)
+        self.tracks_count = self.__get_tracks_count()
 
     def __parse(self):
         artists = Counter()
