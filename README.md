@@ -11,7 +11,7 @@ from your music library on the Yandex Music website. Only a login and a **public
 # Example
 
 ```python
-  from YandexMusicParser.parser import MusicParser
+  from parser import MusicParser
 
   p = MusicParser(login="my_login")
 
