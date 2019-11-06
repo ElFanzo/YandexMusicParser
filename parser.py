@@ -24,6 +24,12 @@ class MusicParser:
 
         self.__run()
 
+    def update(self):
+        """Update locally cached JSON file."""
+        self.__connect()
+        self.__get_json()
+        self.__save_json(update=True)
+
     def __run(self):
         """Perform main actions."""
         if not self.json:
@@ -88,14 +94,14 @@ class MusicParser:
     def __get_json(self):
         self.json = self.__grab.doc.json
 
-    def __save_json(self):
+    def __save_json(self, update=False):
         """Cache JSON file to the disk."""
         try:
             os.mkdir("cache")
         except FileExistsError:
             pass
 
-        if f"{self.login}.json" in os.listdir("cache"):
+        if f"{self.login}.json" in os.listdir("cache") and not update:
             return
 
         with open(f"cache/{self.login}.json", "w", encoding="utf-8") as file:
