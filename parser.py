@@ -9,9 +9,13 @@ class MusicParser:
         self.login = login
         self.artists = None
         self.genres = None
+        self.total_duration = None
+        self.total_duration_ms = None
+        self.tracks_count = None
         self.json = self.__get_local_copy()
 
         self.__grab = None
+        self.__playlist = None
 
         if not self.json:
             self.__connect()
