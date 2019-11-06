@@ -21,8 +21,6 @@ class MusicParser:
             self.__connect()
             self.__get_json()
 
-        self.__tracks = self.__get_tracks()
-
         self.__save_json()
 
     def __get_local_copy(self):
@@ -51,34 +49,17 @@ class MusicParser:
         with open(f"cache/{self.login}.json", "w", encoding="utf-8") as file:
             json.dump(self.json, file, ensure_ascii=False)
 
-    def __get_tracks(self):
+    def __get_playlist(self):
         try:
             playlist = self.json["playlist"]
         except KeyError:
             print(f"The user {self.login} does not exist!")
             raise
+
         try:
-            return playlist["tracks"]
+            playlist["tracks"]
         except KeyError:
             print(f"The account of the user {self.login} is private!")
             raise
 
-    def get_genres(self):
-        genres = Counter()
-
-        for track in self.__tracks:
-            for album in track["albums"]:
-                genre = album.get("genre")
-                if genre:
-                    genres.update({f"{genre}": 1})
-
-        return genres
-
-    def get_artists(self):
-        artists = Counter()
-
-        for track in self.__tracks:
-            for artist in track["artists"]:
-                artists.update({f"{artist['name']}": 1})
-
-        return artists
+        return playlist
