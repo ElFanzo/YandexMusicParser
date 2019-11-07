@@ -5,8 +5,20 @@ from grab import Grab
 
 
 class MusicParser:
-    """Collects data (artists, genres, duration, tracks count) from
-    the Yandex Music site. It works only for the public account.
+    """The class for collecting data from the Yandex Music site.
+
+    It works only with public accounts.
+
+    Available data:
+        artists: Counter object
+        genres: Counter object
+        total_duration: str
+        total_duration_ms: int
+        tracks_count: int
+
+    All scraped data is saved to the 'cache' folder in the JSON format.
+    Each time all the necessary information is taken from the JSON cache.
+    The cache can be updated by the 'update' method, if necessary.
 
     :param login: Yandex Music account's login
     """
