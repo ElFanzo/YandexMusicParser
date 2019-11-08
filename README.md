@@ -8,18 +8,25 @@ Using this project, you can get information about:
 
 from your music library on the Yandex Music website. Only a login and a **public account** are required.
 
-# Example
+# Usage example
 
 ```python
-  from parser import MusicParser
+  from scraper import Listener
 
-  p = MusicParser(login="my_login")
+  listener = Listener(login="my_login")
+  playlist = listener.playlist
 
-  print(p.artists)
-  # Counter({'Ludovico Einaudi': 25, 'Hans Zimmer': 22, 'Coldplay': 20, ...})
+  print(playlist.artists)
+  # {'Ludovico Einaudi': 25, 'Hans Zimmer': 22, 'Coldplay': 20, ...}
+  
+  print(playlist.artists["Kygo"])
+  # 7
   
   print(p.genres)
-  # Counter({'dance': 212, 'pop': 175, 'electronics': 115, ...})
+  # {'dance': 212, 'pop': 175, 'electronics': 115, ...}
+  
+  print(playlist.genres["house"])
+  # 50
   
   print(p.total_duration)
   # 34 h. 17 min. 36 sec.
