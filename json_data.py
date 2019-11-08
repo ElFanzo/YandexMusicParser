@@ -4,6 +4,7 @@ from collections import Counter
 
 from network import Connection
 
+
 class Data:
     """The class for JSON data proccessing.
 
@@ -12,6 +13,7 @@ class Data:
 
     :param json: data in the JSON format
     """
+
     def __init__(self, login: str):
         self.__login = login
         self.json = self.__get_cache()

@@ -3,6 +3,7 @@ from grab import Grab
 
 class Connection:
     """Connect to the Yandex Music site and download response."""
+
     def __init__(self):
         self.__grab = Grab(transport="urllib3")
 

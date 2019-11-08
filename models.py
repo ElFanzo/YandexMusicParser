@@ -8,6 +8,7 @@ class Playlist:
         total_duration_ms: int
         tracks_count: int
     """
+
     def __init__(self, _json):
         self.artists = _json["artists"]
         self.genres = _json["genres"]
