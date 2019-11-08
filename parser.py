@@ -57,14 +57,12 @@ class Data:
         self.json = self.__get_cache()
 
         if not self.json:
-            self.json = self.__get_parsed()
-
-        self.__cache()
+            self.update()
 
     def update(self):
         """Update locally cached JSON file."""
         self.json = self.__get_parsed()
-        self.__cache(update=True)
+        self.__cache()
 
     def __get_cache(self):
         """Get locally cached JSON file, if it exists."""
@@ -98,7 +96,7 @@ class Data:
         result = json.loads("{}")
         result["artists"] = dict(artists.most_common())
         result["genres"] = dict(genres.most_common())
-        result["total_duration"] = self.__format_ms(total_ms)
+        result["total_duration"] = Data.__format_ms(total_ms)
         result["total_duration_ms"] = total_ms
         result["tracks_count"] = playlist["trackCount"]
 
@@ -119,15 +117,12 @@ class Data:
 
         return playlist
 
-    def __cache(self, update=False):
+    def __cache(self):
         """Cache JSON file to the disk."""
         try:
             os.mkdir("cache")
         except FileExistsError:
             pass
-
-        if os.path.exists(f"cache/{self.__login}.json") and not update:
-            return
 
         with open(f"cache/{self.__login}.json", "w", encoding="utf-8") as file:
             json.dump(self.json, file, ensure_ascii=False)
