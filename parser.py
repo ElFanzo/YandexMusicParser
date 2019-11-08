@@ -32,7 +32,7 @@ class MusicParser:
         except GrabConnectionError:
             print(ERR_MSG)
         else:
-            self.playlist = Playlist(*self.__data.get_parsed())
+            self.playlist = Playlist(self.__data.json)
 
     def update(self):
         """Update locally cached JSON file."""
@@ -44,47 +44,26 @@ class MusicParser:
             print("Update method is not available for this object.")
 
 class Playlist:
-    def __init__(self, *args):
-        self.artists, self.genres, self.total_duration, self.total_duration_ms, self.tracks_count = args
+    def __init__(self, _json):
+        self.artists = _json["artists"]
+        self.genres = _json["genres"]
+        self.total_duration = _json["total_duration"]
+        self.total_duration_ms = _json["total_duration_ms"]
+        self.tracks_count = _json["tracks_count"]
 
 class Data:
     def __init__(self, login):
         self.__login = login
-        self.__json = self.__get_cache()
+        self.json = self.__get_cache()
 
-        if not self.__json:
-            http = Connection()
-            http.connect(self.__login)
-            self.__json = http.get_json()
-
-        self.__playlist = self.__get_playlist()
+        if not self.json:
+            self.json = self.__get_parsed()
 
         self.__cache()
 
-    def get_parsed(self):
-        """Parse JSON data."""
-        artists = Counter()
-        genres = Counter()
-        total_ms = 0
-
-        for track in self.__playlist["tracks"]:
-            for artist in track["artists"]:
-                artists.update({f"{artist['name']}": 1})
-
-            for album in track["albums"]:
-                genre = album.get("genre")
-                if genre:
-                    genres.update({f"{genre}": 1})
-
-            total_ms += track["durationMs"]
-
-        return artists, genres, self.__format_ms(total_ms), total_ms, self.__get_tracks_count()
-
     def update(self):
         """Update locally cached JSON file."""
-        http = Connection()
-        http.connect(self.__login)
-        self.__json = http.get_json()
+        self.json = self.__get_parsed()
         self.__cache(update=True)
 
     def __get_cache(self):
@@ -95,9 +74,39 @@ class Data:
         except (FileNotFoundError, json.JSONDecodeError):
             return None
 
-    def __get_playlist(self):
+    def __get_parsed(self):
+        """Parse JSON data."""
+        http = Connection()
+        http.connect(self.__login)
+        playlist = self.__get_playlist(http.get_json())
+
+        artists = Counter()
+        genres = Counter()
+        total_ms = 0
+
+        for track in playlist["tracks"]:
+            for artist in track["artists"]:
+                artists.update({f"{artist['name']}": 1})
+
+            for album in track["albums"]:
+                genre = album.get("genre")
+                if genre:
+                    genres.update({f"{genre}": 1})
+
+            total_ms += track["durationMs"]
+
+        result = json.loads("{}")
+        result["artists"] = dict(artists.most_common())
+        result["genres"] = dict(genres.most_common())
+        result["total_duration"] = self.__format_ms(total_ms)
+        result["total_duration_ms"] = total_ms
+        result["tracks_count"] = playlist["trackCount"]
+
+        return result
+
+    def __get_playlist(self, json_body):
         try:
-            playlist = self.__json["playlist"]
+            playlist = json_body["playlist"]
         except KeyError:
             print(f"The user '{self.__login}' does not exist!")
             raise
@@ -121,7 +130,7 @@ class Data:
             return
 
         with open(f"cache/{self.__login}.json", "w", encoding="utf-8") as file:
-            json.dump(self.__json, file, ensure_ascii=False)
+            json.dump(self.json, file, ensure_ascii=False)
 
     @staticmethod
     def __format_ms(total_ms: int) -> str:
@@ -135,9 +144,6 @@ class Data:
         hours = minutes // 60
 
         return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
-
-    def __get_tracks_count(self):
-        return self.__playlist["trackCount"]
 
 class Connection:
     def __init__(self):
