@@ -86,10 +86,9 @@ class Data:
             for artist in track["artists"]:
                 artists.update({f"{artist['name']}": 1})
 
-            for album in track["albums"]:
-                genre = album.get("genre")
-                if genre:
-                    genres.update({f"{genre}": 1})
+            genre = track["albums"][0].get("genre")
+            if genre:
+                genres.update({f"{genre}": 1})
 
             total_ms += track["durationMs"]
 
