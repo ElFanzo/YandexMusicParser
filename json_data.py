@@ -1,0 +1,93 @@
+import os
+import json
+from collections import Counter
+
+from network import Connection
+
+class Data:
+    def __init__(self, login):
+        self.__login = login
+        self.json = self.__get_cache()
+
+        if not self.json:
+            self.update()
+
+    def update(self):
+        """Update locally cached JSON file."""
+        self.json = self.__get_parsed()
+        self.__cache()
+
+    def __get_cache(self):
+        """Get locally cached JSON file, if it exists."""
+        try:
+            with open(f"cache/{self.__login}.json", encoding="utf-8") as file:
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+
+    def __get_parsed(self):
+        """Parse JSON data."""
+        http = Connection()
+        http.connect(self.__login)
+        playlist = self.__get_playlist(http.get_json())
+
+        artists = Counter()
+        genres = Counter()
+        total_ms = 0
+
+        for track in playlist["tracks"]:
+            for artist in track["artists"]:
+                artists.update({f"{artist['name']}": 1})
+
+            genre = track["albums"][0].get("genre")
+            if genre:
+                genres.update({f"{genre}": 1})
+
+            total_ms += track["durationMs"]
+
+        result = json.loads("{}")
+        result["artists"] = dict(artists.most_common())
+        result["genres"] = dict(genres.most_common())
+        result["total_duration"] = Data.__format_ms(total_ms)
+        result["total_duration_ms"] = total_ms
+        result["tracks_count"] = playlist["trackCount"]
+
+        return result
+
+    def __get_playlist(self, json_body):
+        try:
+            playlist = json_body["playlist"]
+        except KeyError:
+            print(f"The user '{self.__login}' does not exist!")
+            raise
+
+        try:
+            playlist["tracks"]
+        except KeyError:
+            print(f"The account of the user '{self.__login}' is private!")
+            raise
+
+        return playlist
+
+    def __cache(self):
+        """Cache JSON file to the disk."""
+        try:
+            os.mkdir("cache")
+        except FileExistsError:
+            pass
+
+        with open(f"cache/{self.__login}.json", "w", encoding="utf-8") as file:
+            json.dump(self.json, file, ensure_ascii=False)
+
+    @staticmethod
+    def __format_ms(total_ms: int) -> str:
+        """Format milliseconds to the string.
+
+        :param total_ms: a number of milliseconds
+        :return: "%H h. %M min. %S sec." format string
+        """
+        seconds = total_ms // 1000
+        minutes = seconds // 60
+        hours = minutes // 60
+
+        return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
