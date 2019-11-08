@@ -5,7 +5,7 @@ from models import Playlist
 
 ERR_MSG = "Internet is not available. Please, check your connection and try again."
 
-class MusicParser:
+class Listener:
     """The class for collecting data from the Yandex Music site.
 
     It works only with public accounts.
