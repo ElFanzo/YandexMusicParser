@@ -2,7 +2,10 @@ import os
 import json
 from collections import Counter
 from grab import Grab
+from grab.error import GrabConnectionError
 
+
+ERR_MSG = "Internet is not available. Please, check your connection and try again."
 
 class MusicParser:
     """The class for collecting data from the Yandex Music site.
@@ -24,13 +27,21 @@ class MusicParser:
     """
     def __init__(self, login: str):
         self.__login = login
-        self.__data = Data(self.__login)
-
-        self.playlist = Playlist(*self.__data.get_parsed())
+        try:
+            self.__data = Data(self.__login)
+        except GrabConnectionError:
+            print(ERR_MSG)
+        else:
+            self.playlist = Playlist(*self.__data.get_parsed())
 
     def update(self):
         """Update locally cached JSON file."""
-        self.__data.update()
+        try:
+            self.__data.update()
+        except GrabConnectionError:
+            print(f"{ERR_MSG} You can still get your data from the local cache.")
+        except AttributeError:
+            print("Update method is not available for this object.")
 
 class Playlist:
     def __init__(self, *args):
