@@ -20,6 +20,8 @@ class Listener:
             self.__data = Data(self.__login)
         except GrabConnectionError:
             flash(msg="ERR_MSG")
+        except KeyError:
+            pass
         else:
             self.playlist = Playlist(self.__data.json)
 
