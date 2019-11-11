@@ -30,6 +30,7 @@ class Listener:
         flash(msg="UPD")
         try:
             self.__data.update()
+            self.playlist.__init__(self.__data.json)
         except GrabConnectionError:
             flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:
