@@ -3,6 +3,7 @@ import json
 from collections import Counter
 
 from network import Connection
+from log import flash
 
 
 class Data:
@@ -28,10 +29,14 @@ class Data:
 
     def __get_cache(self):
         """Get locally cached JSON file, if it exists."""
+        flash(msg="CACHE_LOOK")
         try:
             with open(f"cache/{self.__login}.json", encoding="utf-8") as file:
-                return json.load(file)
+                js = json.load(file)
+            flash(msg="CACHE_SUCCESS")
+            return js
         except (FileNotFoundError, json.JSONDecodeError):
+            flash(msg="CACHE_FAIL")
             return None
 
     def __get_parsed(self):
@@ -72,13 +77,13 @@ class Data:
         try:
             playlist = json_body["playlist"]
         except KeyError:
-            print(f"The user '{self.__login}' does not exist!")
+            flash(msg="ERR_USER", login=self.__login)
             raise
 
         try:
             playlist["tracks"]
         except KeyError:
-            print(f"The account of the user '{self.__login}' is private!")
+            flash(msg="ERR_ACCESS", login=self.__login)
             raise
 
         return playlist
@@ -92,6 +97,8 @@ class Data:
 
         with open(f"cache/{self.__login}.json", "w", encoding="utf-8") as file:
             json.dump(self.json, file, ensure_ascii=False)
+
+        flash(msg="DONE")
 
     @staticmethod
     def __format_ms(total_ms: int) -> str:

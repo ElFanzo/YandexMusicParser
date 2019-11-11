@@ -2,9 +2,7 @@ from grab.error import GrabConnectionError
 
 from json_data import Data
 from models import Playlist
-
-ERR_MSG = ("Internet is not available. Please, check your connection "
-           "and try again.")
+from log import flash
 
 
 class Listener:
@@ -21,16 +19,16 @@ class Listener:
         try:
             self.__data = Data(self.__login)
         except GrabConnectionError:
-            print(ERR_MSG)
+            flash(msg="ERR_MSG")
         else:
             self.playlist = Playlist(self.__data.json)
 
     def update(self):
         """Update the locally cached JSON file."""
+        flash(msg="UPD")
         try:
             self.__data.update()
         except GrabConnectionError:
-            print(f"{ERR_MSG} You can still get your data from"
-                  "the local cache.")
+            flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:
-            print("Update method is not available for this object.")
+            flash(msg="ERR_UPD")
