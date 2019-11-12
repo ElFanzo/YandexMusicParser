@@ -42,8 +42,7 @@ class Data:
 
     def __get_parsed(self):
         """Get parsed JSON data."""
-        http = Connection()
-        http.connect(self.__login)
+        http = Connection("playlist", self.__login, 3)
         playlist = http.get_json()["playlist"]
 
         artists = Counter()
@@ -71,7 +70,7 @@ class Data:
 
     def __check(self):
         """Check if profile is private or does not exist."""
-        http = Connection()
+        http = Connection("info", self.__login)
         js = http.get_json()
 
         try:
