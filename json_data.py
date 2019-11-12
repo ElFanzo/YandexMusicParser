@@ -20,6 +20,7 @@ class Data:
         self.json = self.__get_cache()
 
         if not self.json:
+            self.__check()
             self.update()
 
     def update(self):
@@ -43,7 +44,7 @@ class Data:
         """Get parsed JSON data."""
         http = Connection()
         http.connect(self.__login)
-        playlist = self.__get_playlist(http.get_json())
+        playlist = http.get_json()["playlist"]
 
         artists = Counter()
         genres = Counter()
@@ -68,25 +69,20 @@ class Data:
 
         return result
 
-    def __get_playlist(self, json_body):
-        """Get playlist value from a JSON object.
+    def __check(self):
+        """Check if profile is private or does not exist."""
+        http = Connection()
+        js = http.get_json()
 
-        :param json_body: the JSON object
-        :return: playlist value
-        """
         try:
-            playlist = json_body["playlist"]
+            access = js["visibility"]
         except KeyError:
             flash(msg="ERR_USER", login=self.__login)
             raise
 
-        try:
-            playlist["tracks"]
-        except KeyError:
+        if access == "private":
             flash(msg="ERR_ACCESS", login=self.__login)
-            raise
-
-        return playlist
+            raise KeyError
 
     def __cache(self):
         """Cache JSON file to the disk."""
