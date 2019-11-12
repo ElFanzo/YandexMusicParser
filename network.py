@@ -2,9 +2,9 @@ from grab import Grab
 
 BASE_URL = "https://music.yandex.ru/handlers"
 URLS = {
-    "info": f"{BASE_URL}""/library.jsx?owner={}",
-    "playlists": f"{BASE_URL}""/library.jsx?owner={}&filter=playlists",
-    "playlist": f"{BASE_URL}""/playlist.jsx?owner={}&kinds={}",
+    "info": f"{BASE_URL}" "/library.jsx?owner={}",
+    "playlists": f"{BASE_URL}" "/library.jsx?owner={}&filter=playlists",
+    "playlist": f"{BASE_URL}" "/playlist.jsx?owner={}&kinds={}",
 }
 
 

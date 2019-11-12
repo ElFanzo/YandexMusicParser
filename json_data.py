@@ -50,7 +50,9 @@ class Data:
 
         for _id in playlist_ids:
             http = Connection("playlist", self.__login, _id)
-            jsons["playlists"].append(self.__get_parsed(http.get_json()["playlist"]))
+            jsons["playlists"].append(
+                self.__get_parsed(http.get_json()["playlist"])
+            )
 
         return jsons
 

@@ -23,7 +23,9 @@ class Listener:
         except KeyError:
             pass
         else:
-            self.playlists = [Playlist(js) for js in self.__data.json["playlists"]]
+            self.playlists = [
+                Playlist(js) for js in self.__data.json["playlists"]
+            ]
             self.name = self.__data.json["name"]
 
     def update(self):
@@ -31,11 +33,14 @@ class Listener:
         flash(msg="UPD")
         try:
             self.__data.update()
-            self.playlists = [Playlist(js) for js in self.__data.json["playlists"]]
+            self.playlists = [
+                Playlist(js) for js in self.__data.json["playlists"]
+            ]
         except GrabConnectionError:
             flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:
             flash(msg="ERR_UPD")
 
     def __str__(self):
-        return f"User {self.__login}({self.name}, {len(self.playlists)} playlist(s))"
+        return (f"User {self.__login}({self.name}, {len(self.playlists)} "
+                "playlist(s))")
