@@ -24,6 +24,7 @@ class Listener:
             pass
         else:
             self.playlists = [Playlist(js) for js in self.__data.json["playlists"]]
+            self.name = self.__data.json["name"]
 
     def update(self):
         """Update the locally cached JSON file."""

@@ -43,8 +43,10 @@ class Data:
     def __get_json_list(self):
         """Get a JSON list of playlists."""
         http = Connection("playlists", self.__login)
-        playlist_ids = http.get_json()["playlistIds"]
+        _json = http.get_json()
+        playlist_ids = _json["playlistIds"]
         jsons = json.loads('{"playlists":[]}')
+        jsons["name"] = _json["owner"]["name"]
 
         for _id in playlist_ids:
             http = Connection("playlist", self.__login, _id)
