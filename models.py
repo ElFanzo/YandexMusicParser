@@ -20,3 +20,6 @@ class Playlist:
         self.total_duration = _json["total_duration"]
         self.total_duration_ms = _json["total_duration_ms"]
         self.tracks_count = _json["tracks_count"]
+
+    def __str__(self):
+        return f"Playlist({self.title}, {self.tracks_count} track(s))"
