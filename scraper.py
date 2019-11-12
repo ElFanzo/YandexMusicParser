@@ -11,7 +11,7 @@ class Listener:
     It works only with public accounts.
 
     :param login: the Yandex Music account's login
-    :param playlist: resulting data in the Playlist object
+    :param playlists: resulting list of the Playlist objects
     """
 
     def __init__(self, login: str):
@@ -23,14 +23,14 @@ class Listener:
         except KeyError:
             pass
         else:
-            self.playlist = Playlist(self.__data.json)
+            self.playlists = [Playlist(js) for js in self.__data.json["playlists"]]
 
     def update(self):
         """Update the locally cached JSON file."""
         flash(msg="UPD")
         try:
             self.__data.update()
-            self.playlist.__init__(self.__data.json)
+            self.playlists = [Playlist(js) for js in self.__data.json["playlists"]]
         except GrabConnectionError:
             flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:

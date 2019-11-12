@@ -1,7 +1,11 @@
 class Playlist:
     """The scraped data storing.
 
-    Available data:
+    Args:
+        _json: JSON object
+
+    Attributes:
+        title: str
         artists: dict
         genres: dict
         total_duration: str
@@ -10,6 +14,7 @@ class Playlist:
     """
 
     def __init__(self, _json):
+        self.title = _json["title"]
         self.artists = _json["artists"]
         self.genres = _json["genres"]
         self.total_duration = _json["total_duration"]

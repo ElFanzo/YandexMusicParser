@@ -25,7 +25,7 @@ class Data:
 
     def update(self):
         """Update locally cached JSON file."""
-        self.json = self.__get_parsed()
+        self.json = self.__get_json_list()
         self.__cache()
 
     def __get_cache(self):
@@ -40,11 +40,20 @@ class Data:
             flash(msg="CACHE_FAIL")
             return None
 
-    def __get_parsed(self):
-        """Get parsed JSON data."""
-        http = Connection("playlist", self.__login, 3)
-        playlist = http.get_json()["playlist"]
+    def __get_json_list(self):
+        """Get a JSON list of playlists."""
+        http = Connection("playlists", self.__login)
+        playlist_ids = http.get_json()["playlistIds"]
+        jsons = json.loads('{"playlists":[]}')
 
+        for _id in playlist_ids:
+            http = Connection("playlist", self.__login, _id)
+            jsons["playlists"].append(self.__get_parsed(http.get_json()["playlist"]))
+
+        return jsons
+
+    def __get_parsed(self, playlist):
+        """Get parsed JSON data for each playlist."""
         artists = Counter()
         genres = Counter()
         total_ms = 0
@@ -60,6 +69,7 @@ class Data:
             total_ms += track["durationMs"]
 
         result = json.loads("{}")
+        result["title"] = playlist["title"]
         result["artists"] = dict(artists.most_common())
         result["genres"] = dict(genres.most_common())
         result["total_duration"] = Data.__format_ms(total_ms)
