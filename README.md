@@ -1,6 +1,7 @@
 # YandexMusicParser
 
 Using this project, you can get information about:
+*  user's name
 *  artists
 *  genres
 *  tracks count
@@ -13,27 +14,37 @@ from your music library on the Yandex Music website. Only a login and a **public
 ```python
   from scraper import Listener
 
-  listener = Listener(login="my_login")
-  playlist = listener.playlist
+  me = Listener(login="john_doe")
+  
+  print(me.name)
+  # John Doe
+  
+  print(me)
+  # User john_doe(John Doe, 3 playlist(s))
+  
+  first = me.playlists[0]
+  
+  print(first)
+  # Playlist(Мне нравится, 1000 track(s))
 
-  print(playlist.artists)
+  print(first.artists)
   # {'Ludovico Einaudi': 25, 'Hans Zimmer': 22, 'Coldplay': 20, ...}
   
-  print(playlist.artists["Kygo"])
+  print(first.artists["Kygo"])
   # 7
   
-  print(p.genres)
+  print(first.genres)
   # {'dance': 212, 'pop': 175, 'electronics': 115, ...}
   
-  print(playlist.genres["house"])
+  print(first.genres["house"])
   # 50
   
-  print(p.total_duration)
-  # 34 h. 17 min. 36 sec.
+  print(first.total_duration)
+  # 70 h. 17 min. 36 sec.
   
-  print(p.total_duration_ms)
-  # 123456789
+  print(first.total_duration_ms)
+  # 1234567890
   
-  print(p.tracks_count)
-  # 567
+  print(first.tracks_count)
+  # 1000
 ```
