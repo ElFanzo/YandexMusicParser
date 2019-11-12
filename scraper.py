@@ -36,3 +36,6 @@ class Listener:
             flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:
             flash(msg="ERR_UPD")
+
+    def __str__(self):
+        return f"User {self.__login}({self.name}, {len(self.playlists)} playlist(s))"
