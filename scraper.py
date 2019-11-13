@@ -1,8 +1,8 @@
 from grab.error import GrabConnectionError
 
 from json_data import Data
-from models import Playlist
 from log import flash
+from models import Playlist
 
 
 class Listener:

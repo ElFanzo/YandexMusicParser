@@ -1,9 +1,9 @@
-import os
 import json
+import os
 from collections import Counter
 
-from network import Connection
 from log import flash
+from network import Connection
 
 
 class Data:
