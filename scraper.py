@@ -46,7 +46,7 @@ class Listener:
     def __set_data(self):
         self.name = self.__data.json["name"]
         self.playlists = [
-                Playlist(js) for js in self.__data.json["playlists"]
+            Playlist(js) for js in self.__data.json["playlists"]
         ]
 
     def __str__(self):
