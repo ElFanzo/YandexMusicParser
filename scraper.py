@@ -10,8 +10,12 @@ class Listener:
 
     It works only with public accounts.
 
-    :param login: the Yandex Music account's login
-    :param playlists: resulting list of the Playlist objects
+    Args:
+        login: a Yandex Music account's login
+
+    Attributes:
+        name: a user' name
+        playlists: a resulting list of the Playlist objects
     """
 
     def __init__(self, login: str):

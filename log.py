@@ -24,6 +24,7 @@ msg["DONE"] = "Done!"
 
 
 def flash(**kwargs):
+    """Print various kinds of information."""
     key = kwargs["msg"]
     login = kwargs.get("login")
 

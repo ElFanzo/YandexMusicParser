@@ -12,7 +12,11 @@ class Data:
     All data is saved to the 'cache' folder in the JSON format.
     Each time all the necessary information is taken from the JSON cache.
 
-    :param json: data in the JSON format
+    Args:
+        login: a user's login
+
+    Attributes:
+        json: data in the JSON format
     """
 
     def __init__(self, login: str):
