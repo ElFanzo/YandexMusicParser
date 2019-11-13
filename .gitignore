@@ -3,3 +3,6 @@
 
 # local cache of the scraped data
 *.json
+
+# flake8 config
+.flake8
