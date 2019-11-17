@@ -2,6 +2,7 @@ import json
 import os
 from collections import Counter
 
+from database import DataCtx
 from log import flash
 from network import Connection
 
@@ -21,44 +22,87 @@ class Data:
 
     def __init__(self, login: str):
         self.__login = login
-        self.json = self.__get_cache()
+        self.__ctx = DataCtx()
+        self.__uid = None
 
-        if not self.json:
-            self.__check()
+        if self.__is_user_exists():
             self.update()
+        else:
+            self.download()
+
+        #self.json = self.__get_cache()
+
+        #if not self.json:
+        #    self.__check()
+        #    self.update()
 
     def update(self):
         """Update locally cached JSON file."""
-        self.json = self.__get_json_list()
-        self.__cache()
+        pass
 
-    def __get_cache(self):
-        """Get locally cached JSON file, if it exists."""
-        flash(msg="CACHE_LOOK")
-        try:
-            with open(f"cache/{self.__login}.json", encoding="utf-8") as file:
-                js = json.load(file)
-            flash(msg="CACHE_SUCCESS")
-            return js
-        except (FileNotFoundError, json.JSONDecodeError):
-            flash(msg="CACHE_FAIL")
-            return None
+    def download(self):
+        self.__check()
 
-    def __get_json_list(self):
-        """Get a JSON list of playlists."""
-        http = Connection("playlists", self.__login)
-        _json = http.get_json()
-        playlist_ids = _json["playlistIds"]
-        jsons = json.loads('{"playlists":[]}')
-        jsons["name"] = _json["owner"]["name"]
+        common = self.__common_info()
 
-        for _id in playlist_ids:
-            http = Connection("playlist", self.__login, _id)
-            jsons["playlists"].append(
-                self.__get_parsed(http.get_json()["playlist"])
+        self.__add_user(common)
+
+        self.__add_playlists(common)
+
+        self.__add_playlist_tracks(common)
+
+    def __is_user_exists(self):
+        return self.__ctx.select(
+            "select count(*) from user where login = ?", (self.__login,)
+        )[0] == 1
+
+    def __add_user(self, common):
+        self.__uid = common["owner"]["uid"]
+        name = common["owner"]["name"]
+        playlists_count = len(common["playlistIds"])
+
+        query = "insert into user values (?, ?, ?, ?)"
+        self.__ctx.execute(
+            query, (self.__uid, self.__login, name, playlists_count)
+        )
+
+    def __add_playlists(self, common):
+        for playlist in common["playlists"]:
+            _id = playlist["kind"]
+            title = playlist["title"]   #  TODO: clearify title!
+            tracks_count = playlist["trackCount"]
+            modified = playlist.get("modified")
+
+            query = "insert into playlist values (?, ?, ?, ?)"
+            self.__ctx.execute(
+                query, (self.__uid, _id, title, tracks_count, 0, modified)
             )
 
-        return jsons
+    def __add_track(self, track):
+        # add to table
+
+        self.__add_artists()
+
+        # set relation
+
+    def __add_artists(self, artists):
+        # add to table
+
+    def __common_info(self):
+        http = Connection("playlists", self.__login)
+        self.__common = http.get_json()
+
+    def __get_playlist(self, _id):
+        http = Connection("playlist", self.__login, _id)
+        return http.get_json()["playlist"]
+
+    def __add_playlist_tracks(self, common):
+        for _id in common["playlistIds"]:
+            js = self.__get_playlist(_id)
+
+            for track in js["tracks"]:
+                self.__add_track(track)
+                # set relation
 
     def __get_parsed(self, playlist):
         """Get parsed JSON data for each playlist."""
