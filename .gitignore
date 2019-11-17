@@ -1,8 +1,8 @@
 # python cache
 *.pyc
 
-# local cache of the scraped data
-*.json
+# database
+*.db
 
 # flake8 config
 .flake8
