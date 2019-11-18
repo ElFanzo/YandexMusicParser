@@ -93,57 +93,49 @@ class DataCtx:
         return rows
 
     def __create_tables(self):
-        self.execute("PRAGMA foreign_keys=on;")
-        self.execute(
-            """create table if not exists user (
+        self.__cursor.executescript(
+            """PRAGMA foreign_keys=on;
+
+            create table if not exists user (
                 id integer primary key,
                 login text unique not null,
-                name text not null)
-            """
-        )
-        self.execute(
-            """create table if not exists playlist (
+                name text not null
+                playlists_count integer);
+
+            create table if not exists playlist (
                 user_id integer,
                 id integer primary key,
                 title text not null,
                 tracks_count integer,
                 duration integer,
                 modified text,
-                foreign key (user_id) references user(id) on delete cascade)
-            """
-        )
-        self.execute(
-            """create table if not exists track (
+                foreign key (user_id) references user(id) on delete cascade);
+
+            create table if not exists track (
                 id integer primary key,
                 title text not null,
                 year integer not null,
                 genre text,
-                duration integer)
-            """
-        )
-        self.execute(
-            """create table if not exists artist (
+                duration integer);
+
+            create table if not exists artist (
                 id integer primary key,
                 name text not null,
-                likes integer)
-            """
-        )
-        self.execute(
-            """create table if not exists playlist_track (
+                likes integer);
+
+            create table if not exists playlist_track (
                 user_id integer,
                 playlist_id integer,
                 track_id integer,
                 foreign key (user_id) references user(id) on delete cascade,
                 foreign key (playlist_id) references playlist(id) on delete cascade,
-                foreign key (track_id) references track(id) on delete cascade)
-            """
-        )
-        self.execute(
-            """create table if not exists artist_track (
+                foreign key (track_id) references track(id) on delete cascade);
+
+            create table if not exists artist_track (
                 artist_id integer,
                 track_id integer,
                 foreign key (artist_id) references artist(id) on delete cascade,
-                foreign key (track_id) references track(id) on delete cascade)
+                foreign key (track_id) references track(id) on delete cascade);
             """
         )
 
