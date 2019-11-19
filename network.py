@@ -11,13 +11,13 @@ URLS = {
 class Connection:
     """Connect to the Yandex Music site and download response."""
 
-    def __init__(self, subject, *args):
+    def __init__(self):
         self.__grab = Grab(transport="urllib3")
 
+    def get_json(self, subject, *args):
+        """Get response in the JSON format."""
         self.__connect(subject, *args)
 
-    def get_json(self):
-        """Get response in the JSON format."""
         return self.__grab.doc.json
 
     def __connect(self, subject, *args):
