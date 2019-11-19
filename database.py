@@ -36,6 +36,14 @@ class DataCtx:
         """
         return self.__exec(query, *params, is_many=True)
 
+    def execute_script(self, script: str):
+        """Execute all SQL scripts by one query.
+
+        :param script: a string with queries
+        """
+        self.__cursor.executescript(script)
+        self.__conn.commit()
+
     def select(self, query: str, *params):
         """Select rows from a table.
 
