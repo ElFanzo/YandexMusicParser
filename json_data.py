@@ -1,8 +1,4 @@
-import json
-import os
-from collections import Counter
-
-from database import DataCtx
+from query import Query
 from log import flash
 from network import Connection
 
@@ -15,125 +11,81 @@ class Data:
 
     Args:
         login: a user's login
-
-    Attributes:
-        json: data in the JSON format
     """
-
+    # TODO Check updating.
     def __init__(self, login: str):
+        self.__query = Query()
+        self.__query.init_tables()
+
         self.__login = login
-        self.__ctx = DataCtx()
-        self.__uid = None
+        self.__uid = self.__query.get_uid(self.__login)
 
-        if self.__is_user_exists():
-            self.update()
-        else:
-            self.download()
-
-        #self.json = self.__get_cache()
-
-        #if not self.json:
-        #    self.__check()
-        #    self.update()
+        if not self.__uid:
+            self.__check()
+            self.__download()
 
     def update(self):
-        """Update locally cached JSON file."""
-        pass
-
-    def download(self):
-        self.__check()
-
+        """Update database."""
         common = self.__common_info()
+        local_ids = self.__query.get_playlists_ids(self.__uid)
+        remote_ids = common["playlistIds"]
 
-        self.__add_user(common)
+        diff = Data.get_differences(local_ids, remote_ids)
+        if diff:
+            if diff["add"]:
+                self.add_new_playlists(common, diff["add"])
+            if diff["delete"]:
+                self.__query.delete_playlists(self.__uid, diff["delete"])
 
-        self.__add_playlists(common)
+            self.__query.update_playlists_count(self.__uid, len(remote_ids))
 
-        self.__add_playlist_tracks(common)
+        existed_ids = set(local_ids) - diff["delete"]
+        self.update_existed([i for i in common["playlists"] if i["kind"] in existed_ids])
 
-    def __is_user_exists(self):
-        return self.__ctx.select(
-            "select count(*) from user where login = ?", (self.__login,)
-        )[0] == 1
+    def add_new_playlists(self, common, ids):
+        self.__add_playlists(common, ids)
+        self.__add_playlists_tracks(ids)
 
-    def __add_user(self, common):
-        self.__uid = common["owner"]["uid"]
-        name = common["owner"]["name"]
-        playlists_count = len(common["playlistIds"])
-
-        query = "insert into user values (?, ?, ?, ?)"
-        self.__ctx.execute(
-            query, (self.__uid, self.__login, name, playlists_count)
-        )
-
-    def __add_playlists(self, common):
-        for playlist in common["playlists"]:
+    def update_existed(self, existed):
+        for playlist in existed:
             _id = playlist["kind"]
-            title = playlist["title"]   #  TODO: clearify title!
-            tracks_count = playlist["trackCount"]
-            modified = playlist.get("modified")
+            new_modified = playlist.get("modified")
 
-            query = "insert into playlist values (?, ?, ?, ?)"
-            self.__ctx.execute(
-                query, (self.__uid, _id, title, tracks_count, 0, modified)
-            )
+            if not new_modified:
+                self.update_playlist(_id)
+            elif self.__query.get_modified(self.__uid, _id) != new_modified:
+                self.update_playlist(_id)
+                self.__query.update_modified(self.__uid, _id, new_modified)
 
-    def __add_track(self, track):
-        # add to table
+    def update_playlist(self, _id):
+        playlist = self.__get_playlist(_id)
+        local_ids = self.__query.get_playlist_tracks_ids(self.__uid, _id)
+        remote_ids = [int(i.split(":")[0]) for i in playlist["trackIds"]]
 
-        self.__add_artists()
+        diff = Data.get_differences(local_ids, remote_ids)
+        if diff:
+            if diff["add"]:
+                self.__add_tracks(playlist["tracks"], _id, diff["add"])
+            if diff["delete"]:
+                self.__query.delete_tracks(self.__uid, _id, diff["delete"])
 
-        # set relation
+            self.__query.update_tracks_count(self.__uid, _id)
+            self.__query.update_playlist_duration(self.__uid, _id)
 
-    def __add_artists(self, artists):
-        # add to table
+    @staticmethod
+    def get_differences(local_ids, remote_ids):
+        local_set = set(local_ids)
+        remote_set = set(remote_ids)
+        diff = {
+            "add": remote_set - local_set,
+            "delete": local_set - remote_set
+        }
 
-    def __common_info(self):
-        http = Connection("playlists", self.__login)
-        self.__common = http.get_json()
-
-    def __get_playlist(self, _id):
-        http = Connection("playlist", self.__login, _id)
-        return http.get_json()["playlist"]
-
-    def __add_playlist_tracks(self, common):
-        for _id in common["playlistIds"]:
-            js = self.__get_playlist(_id)
-
-            for track in js["tracks"]:
-                self.__add_track(track)
-                # set relation
-
-    def __get_parsed(self, playlist):
-        """Get parsed JSON data for each playlist."""
-        artists = Counter()
-        genres = Counter()
-        total_ms = 0
-
-        for track in playlist["tracks"]:
-            for artist in track["artists"]:
-                artists.update({f"{artist['name']}": 1})
-
-            genre = track["albums"][0].get("genre")
-            if genre:
-                genres.update({f"{genre}": 1})
-
-            total_ms += track["durationMs"]
-
-        result = json.loads("{}")
-        result["title"] = playlist["title"]
-        result["artists"] = dict(artists.most_common())
-        result["genres"] = dict(genres.most_common())
-        result["total_duration"] = Data.__format_ms(total_ms)
-        result["total_duration_ms"] = total_ms
-        result["tracks_count"] = playlist["trackCount"]
-
-        return result
+        return diff if diff["add"] or diff["delete"] else None
 
     def __check(self):
         """Check if profile is private or does not exist."""
-        http = Connection("info", self.__login)
-        js = http.get_json()
+        js = Connection().get_json("info", self.__login)
 
         try:
             access = js["visibility"]
@@ -145,27 +97,97 @@ class Data:
             flash(msg="ERR_ACCESS", login=self.__login)
             raise KeyError
 
-    def __cache(self):
-        """Cache JSON file to the disk."""
-        try:
-            os.mkdir("cache")
-        except FileExistsError:
-            pass
+    def __download(self):
+        common = self.__common_info()
 
-        with open(f"cache/{self.__login}.json", "w", encoding="utf-8") as file:
-            json.dump(self.json, file, ensure_ascii=False)
+        self.__add_user(common)
 
-        flash(msg="DONE")
+        self.__add_playlists(common, common["playlistIds"])
 
-    @staticmethod
-    def __format_ms(total_ms: int) -> str:
-        """Format milliseconds to the string.
+        self.__add_playlists_tracks(common["playlistIds"])
 
-        :param total_ms: a number of milliseconds
-        :return: "%H h. %M min. %S sec." format string
-        """
-        seconds = total_ms // 1000
-        minutes = seconds // 60
-        hours = minutes // 60
+    def __common_info(self):
+        return Connection().get_json("playlists", self.__login)
 
-        return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
+    def __add_user(self, common):
+        self.__uid = common["owner"]["uid"]
+        name = common["owner"]["name"]
+        playlists_count = len(common["playlistIds"])
+
+        self.__query.insert_user(self.__uid, self.__login, name, playlists_count)
+
+    def __add_playlists(self, common, ids_to_add):
+        params = [
+            (
+                self.__uid,
+                playlist["kind"],
+                playlist["title"],
+                playlist["trackCount"],
+                0,
+                playlist.get("modified")
+            ) for playlist in common["playlists"] if playlist["kind"] in ids_to_add
+        ]
+
+        self.__query.insert_playlists(params)
+
+    def __add_playlists_tracks(self, ids):
+        for _id in ids:
+            playlist = self.__get_playlist(_id)
+            ids_to_add = set()
+
+            for i in playlist["trackIds"]:
+                j = int(i.split(":")[0]) if type(i) is str else i
+                ids_to_add.add(j)
+
+            # set([int(i.split(":")[0]) for i in playlist["trackIds"]])
+            self.__add_tracks(playlist["tracks"], _id, ids_to_add)
+
+            self.__query.update_playlist_duration(self.__uid, _id)
+
+    def __add_tracks(self, tracks, playlist_id, ids_to_add):
+        tracks_ids = self.__query.get_tracks_ids()
+        params = []
+
+        for track in tracks:
+            track_id = int(track["id"])
+
+            if (track_id not in tracks_ids) and (track_id in ids_to_add):
+                params.append(
+                    (
+                        track_id,
+                        track["title"],
+                        track["albums"][0].get("year"),
+                        track["albums"][0].get("genre"),
+                        track["durationMs"]
+                    )
+                )
+                tracks_ids.append(track_id)
+
+        self.__query.insert_tracks(params)
+
+        params = [(self.__uid, playlist_id, _id) for _id in ids_to_add]
+        self.__query.insert_playlist_tracks(params)
+
+        self.__add_artists(tracks, ids_to_add)
+
+    def __add_artists(self, tracks, ids_to_add):
+        artists_ids = self.__query.get_artists_ids()
+        artists_params = []
+        artist_track_params = []
+
+        for track in tracks:
+            if int(track["id"]) in ids_to_add:
+                for artist in track["artists"]:
+                    artist_id = int(artist["id"])
+
+                    if artist_id not in artists_ids:
+                        artists_params.append((artist_id, artist["name"]))
+                        artists_ids.append(artist_id)
+
+                    artist_track_params.append((artist_id, track["id"]))
+
+        self.__query.insert_artists(artists_params)
+        self.__query.insert_artist_track(artist_track_params)
+
+    def __get_playlist(self, _id):
+        return Connection().get_json("playlist", self.__login, _id)["playlist"]
