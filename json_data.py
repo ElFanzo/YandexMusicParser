@@ -12,7 +12,7 @@ class Data:
     Args:
         login: a user's login
     """
-    # TODO Check updating.
+
     def __init__(self, login: str):
         self.__query = Query()
         self.__query.init_tables()
@@ -40,7 +40,11 @@ class Data:
             self.__query.update_playlists_count(self.__uid, len(remote_ids))
 
         existed_ids = set(local_ids) - diff["delete"]
-        self.update_existed([i for i in common["playlists"] if i["kind"] in existed_ids])
+        self.update_existed(
+            [i for i in common["playlists"] if i["kind"] in existed_ids]
+        )
+
+        self.__query.delete_unused()
 
     def add_new_playlists(self, common, ids):
         self.__add_playlists(common, ids)
@@ -133,14 +137,11 @@ class Data:
     def __add_playlists_tracks(self, ids):
         for _id in ids:
             playlist = self.__get_playlist(_id)
-            ids_to_add = set()
-
-            for i in playlist["trackIds"]:
-                j = int(i.split(":")[0]) if type(i) is str else i
-                ids_to_add.add(j)
-
-            # set([int(i.split(":")[0]) for i in playlist["trackIds"]])
-            self.__add_tracks(playlist["tracks"], _id, ids_to_add)
+            self.__add_tracks(
+                playlist["tracks"],
+                _id,
+                set([int(str(i).split(":")[0]) for i in playlist["trackIds"]])
+            )
 
             self.__query.update_playlist_duration(self.__uid, _id)
 
