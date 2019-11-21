@@ -1,8 +1,8 @@
 from grab.error import GrabConnectionError
 
-from json_data import Data
 from log import flash
 from models import Artist, Playlist, User, Track
+from service import Service
 
 
 class Client:
@@ -22,7 +22,7 @@ class Client:
 
         self.__login = login
         try:
-            self.__data = Data(self.__login)
+            self.__service = Service(self.__login)
         except GrabConnectionError:
             flash(msg="ERR_MSG")
         except KeyError:
@@ -34,7 +34,7 @@ class Client:
         """Update client's data."""
         flash(msg="UPD")
         try:
-            self.__data.update()
+            self.__service.update()
             self.__set_data()
         except GrabConnectionError:
             flash(msg="ERR_NET_BUT_CACHE")
