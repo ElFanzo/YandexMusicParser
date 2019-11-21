@@ -3,14 +3,11 @@ from log import flash
 from network import Connection
 
 
-class Data:
-    """The class for JSON data proccessing.
-
-    All data is saved to the 'cache' folder in the JSON format.
-    Each time all the necessary information is taken from the JSON cache.
+class Service:
+    """A user's data proccessing.
 
     Args:
-        login: a user's login
+        login: the user's login
     """
 
     def __init__(self, login: str):
@@ -29,7 +26,7 @@ class Data:
         common = self.__common_info()
         local_ids = self.__query.get_playlists_ids(self.__uid)
         remote_ids = common["playlistIds"]
-        diff = Data.__get_differences(local_ids, remote_ids)
+        diff = Service.__get_differences(local_ids, remote_ids)
 
         self.__add_delete_playlists(common, diff, local_ids, remote_ids)
 
