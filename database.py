@@ -9,11 +9,10 @@ class DataCtx:
       Count of inserted, changed or deleted records.
     """
 
-    __conn = connect("cache/YandexMusicData.db")
-
     def __init__(self):
         self.rowcount = 0
 
+        self.__conn = connect("cache/YandexMusicData.db")
         self.__cursor = self.__conn.cursor()
 
     def execute(self, query: str, *params):
