@@ -2,25 +2,23 @@ from grab.error import GrabConnectionError
 
 from json_data import Data
 from log import flash
-from models import Playlist
+from models import Artist, Playlist, User, Track
 
 
-class Listener:
-    """The class for scraping data from the Yandex Music site.
+class Client:
+    """A client's class.
 
-    It works only with public accounts.
+    Only a user with the public account can be a client.
 
     Args:
         login: a Yandex Music account's login
 
     Attributes:
-        name: a user' name
-        playlists: a resulting list of the Playlist objects
+        user: User object
     """
 
     def __init__(self, login: str):
-        self.name = None
-        self.playlists = None
+        self.user = None
 
         self.__login = login
         try:
@@ -33,7 +31,7 @@ class Listener:
             self.__set_data()
 
     def update(self):
-        """Update the locally cached JSON file."""
+        """Update client's data."""
         flash(msg="UPD")
         try:
             self.__data.update()
@@ -44,11 +42,6 @@ class Listener:
             flash(msg="ERR_UPD")
 
     def __set_data(self):
-        self.name = self.__data.json["name"]
-        self.playlists = [
-            Playlist(js) for js in self.__data.json["playlists"]
-        ]
-
-    def __str__(self):
-        return (f"User {self.__login}({self.name}, {len(self.playlists)} "
-                "playlist(s))")
+        # self.user = User(self.__login, ...)
+        # playlists, tracks, artists...
+        pass
