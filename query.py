@@ -209,7 +209,7 @@ class Query(BaseQuery):
         signs = ", ".join(["?"] * len(ids))
         self._db.execute(
             f"delete from playlist where id in ({signs}) and user_id = ?",
-            (ids, uid)
+            (*ids, uid)
         )
 
     def delete_tracks(self, uid: int, kind: int, ids: list):
@@ -219,6 +219,24 @@ class Query(BaseQuery):
             where track_id in ({signs}) 
             and user_id = ? and playlist_id = ?""",
             (ids, uid, kind)
+        )
+
+    def delete_unused(self):
+        self.__delete_unused_tracks()
+        self.__delete_unused_artists()
+
+    def __delete_unused_tracks(self):
+        self._db.execute(
+            """delete from track
+            where id not in (
+                select track_id from playlist_track)"""
+        )
+
+    def __delete_unused_artists(self):
+        self._db.execute(
+            """delete from artist
+            where id not in (
+                select artist_id from artist_track)"""
         )
 
     def __get_ids(self, table: str):
