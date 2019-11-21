@@ -53,7 +53,11 @@ class Data:
     def update_existed(self, existed):
         for playlist in existed:
             _id = playlist["kind"]
+            new_title = playlist["title"]
             new_modified = playlist.get("modified")
+
+            if self.__query.get_playlist_title(self.__uid, _id) != new_title:
+                self.__query.update_playlist_title(self.__uid, _id, new_title)
 
             if not new_modified:
                 self.update_playlist(_id)

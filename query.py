@@ -167,12 +167,25 @@ class Query(BaseQuery):
             )
         ]
 
+    def get_playlist_title(self, uid: int, _id: int):
+        return self._db.select(
+            """select title from playlist
+             where user_id = ? and id = ?""",
+            (uid, _id)
+        )[0]
+
     def get_modified(self, uid: int, _id: int):
         return self._db.select(
             """select modified from playlist
              where user_id = ? and id = ?""",
             (uid, _id)
         )[0]
+
+    def update_playlist_title(self, uid: int, _id: int, title: str):
+        self._db.execute(
+            "update playlist set title = ? where user_id = ? and id = ?",
+            (title, uid, _id)
+        )
 
     def update_playlist_duration(self, uid: int, _id: int):
         self._db.execute(
