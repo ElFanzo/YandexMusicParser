@@ -29,8 +29,19 @@ class Data:
         common = self.__common_info()
         local_ids = self.__query.get_playlists_ids(self.__uid)
         remote_ids = common["playlistIds"]
-
         diff = Data.get_differences(local_ids, remote_ids)
+
+        self.add_delete_playlists(common, diff, local_ids, remote_ids)
+
+        existed_ids = set(local_ids) - (diff["delete"] if diff else set())
+        self.update_existed(
+            [i for i in common["playlists"] if i["kind"] in existed_ids]
+        )
+
+        self.__query.delete_unused()
+
+    def add_delete_playlists(self, common, diff, local_ids, remote_ids):
+        """Add new, delete existed."""
         if diff:
             if diff["add"]:
                 self.add_new_playlists(common, diff["add"])
@@ -38,13 +49,6 @@ class Data:
                 self.__query.delete_playlists(self.__uid, diff["delete"])
 
             self.__query.update_playlists_count(self.__uid, len(remote_ids))
-
-        existed_ids = set(local_ids) - diff["delete"]
-        self.update_existed(
-            [i for i in common["playlists"] if i["kind"] in existed_ids]
-        )
-
-        self.__query.delete_unused()
 
     def add_new_playlists(self, common, ids):
         self.__add_playlists(common, ids)
