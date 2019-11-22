@@ -12,7 +12,7 @@ class BaseQuery:
     def get_user_name(self):
         name = self._db.select(
             "select name from user where id = ?", (self._uid,)
-        )  # TODO: if None?
+        )
         return name[0] if name else None
 
     def __get_uid(self, login: str):
@@ -20,53 +20,6 @@ class BaseQuery:
             "select id from user where login = ?", (login,)
         )
         return uid[0] if uid else None
-
-
-class UserQuery(BaseQuery):
-    def get_genre_artists(self, genre):
-        query = """select name
-                   from artist
-                   where id in (
-                     select distinct at.artist_id
-                     from artist_track at
-                      inner join track t on t.id = at.track_id
-                      inner join playlist_track pt on pt.track_id = t.id
-                     where pt.user_id = ? and t.genre = ?)
-                   order by name"""
-        return self._db.select_all(query, (self._uid, genre))
-
-    def get_user_artists(self):
-        query = """select a.name, count(*) as col
-                   from artist a
-                     inner join artist_track at on at.artist_id = a.id
-                     inner join track t on t.id = at.track_id
-                     inner join playlist_track pt on pt.track_id = t.id
-                   where pt.playlist_id = 3 and pt.user_id = ?
-                   group by a.name
-                   order by col desc, a.name"""
-        return self._db.select_all(query, (self._uid,))
-
-    def get_user_favorite(self):
-        query = """select title
-                   from track
-                     inner join playlist_track on track_id = id
-                   where playlist_id = 3 and user_id = ?
-                   order by title"""
-        return self._db.select_all(query, (self._uid,))
-
-    def get_user_genres(self):
-        query = """select genre, count(*) as col
-                   from track
-                     inner join playlist_track on track_id = id
-                   where genre is not null and playlist_id = 3
-                     and user_id = ?
-                   group by genre
-                   order by col desc, genre"""
-        return self._db.select_all(query, (self._uid,))
-
-    def get_user_playlists(self):
-        query = """select * from playlist where user_id = ?"""
-        return self._db.select_all(query, (self._uid,))
 
 
 class Query(BaseQuery):
@@ -258,3 +211,50 @@ class Query(BaseQuery):
 
     def __get_params_with_uid(self, params: list):
         return [tuple([self._uid, *i]) for i in params]
+
+
+class UserQuery(BaseQuery):
+    def get_genre_artists(self, genre):
+        query = """select name
+                   from artist
+                   where id in (
+                     select distinct at.artist_id
+                     from artist_track at
+                      inner join track t on t.id = at.track_id
+                      inner join playlist_track pt on pt.track_id = t.id
+                     where pt.user_id = ? and t.genre = ?)
+                   order by name"""
+        return self._db.select_all(query, (self._uid, genre))
+
+    def get_user_artists(self):
+        query = """select a.name, count(*) as col
+                   from artist a
+                     inner join artist_track at on at.artist_id = a.id
+                     inner join track t on t.id = at.track_id
+                     inner join playlist_track pt on pt.track_id = t.id
+                   where pt.playlist_id = 3 and pt.user_id = ?
+                   group by a.name
+                   order by col desc, a.name"""
+        return self._db.select_all(query, (self._uid,))
+
+    def get_user_favorite(self):
+        query = """select title
+                   from track
+                     inner join playlist_track on track_id = id
+                   where playlist_id = 3 and user_id = ?
+                   order by title"""
+        return self._db.select_all(query, (self._uid,))
+
+    def get_user_genres(self):
+        query = """select genre, count(*) as col
+                   from track
+                     inner join playlist_track on track_id = id
+                   where genre is not null and playlist_id = 3
+                     and user_id = ?
+                   group by genre
+                   order by col desc, genre"""
+        return self._db.select_all(query, (self._uid,))
+
+    def get_user_playlists(self):
+        query = """select * from playlist where user_id = ?"""
+        return self._db.select_all(query, (self._uid,))
