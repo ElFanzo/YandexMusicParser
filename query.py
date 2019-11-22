@@ -5,21 +5,12 @@ class BaseQuery:
     """Queries executing class."""
     def __init__(self, login: str):
         self._db = DataCtx()
-        self._uid = self.__get_uid(login)
+        self.user_name, self._uid = self.__get_user_data(login)
 
-        self.user_name = self.get_user_name()
-
-    def get_user_name(self):
-        name = self._db.select(
-            "select name from user where id = ?", (self._uid,)
+    def __get_user_data(self, login: str):
+        return self._db.select(
+            "select name, id from user where login = ?", (login,)
         )
-        return name[0] if name else None
-
-    def __get_uid(self, login: str):
-        uid = self._db.select(
-            "select id from user where login = ?", (login,)
-        )
-        return uid[0] if uid else None
 
 
 class Query(BaseQuery):
