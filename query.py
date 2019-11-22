@@ -3,13 +3,27 @@ from database import DataCtx
 
 class BaseQuery:
     """Queries executing class."""
-    def __init__(self):
+    def __init__(self, login: str):
         self._db = DataCtx()
+        self._uid = self.__get_uid(login)
+
+        self.user_name = self.get_user_name()
+
+    def get_user_name(self):
+        name = self._db.select(
+            "select name from user where id = ?", (self._uid,)
+        )  # TODO: if None?
+        return name[0] if name else None
+
+    def __get_uid(self, login: str):
+        uid = self._db.select(
+            "select id from user where login = ?", (login,)
+        )
+        return uid[0] if uid else None
 
 
 class UserQuery(BaseQuery):
-
-    def get_genre_artists(self, login, genre):
+    def get_genre_artists(self, genre):
         query = """select name
                    from artist
                    where id in (
@@ -17,77 +31,59 @@ class UserQuery(BaseQuery):
                      from artist_track at
                       inner join track t on t.id = at.track_id
                       inner join playlist_track pt on pt.track_id = t.id
-                      inner join playlist p on p.user_id = pt.user_id
-                        and p.id = pt.playlist_id
-                      inner join user u on u.id = p.user_id
-                     where u.login = ? and t.genre = ? and pt.playlist_id = 3)
+                     where pt.user_id = ? and t.genre = ?)
                    order by name"""
-        return self._db.select_all(query, (login, genre))
+        return self._db.select_all(query, (self._uid, genre))
 
-    def get_user_artists(self, login):
+    def get_user_artists(self):
         query = """select a.name, count(*) as col
                    from artist a
                      inner join artist_track at on at.artist_id = a.id
                      inner join track t on t.id = at.track_id
                      inner join playlist_track pt on pt.track_id = t.id
-                     inner join playlist p on p.user_id = pt.user_id
-                       and p.id = pt.playlist_id
-                     inner join user u on u.id = p.user_id
-                   where pt.playlist_id = 3 and u.login = ?
+                   where pt.playlist_id = 3 and pt.user_id = ?
                    group by a.name
-                   order by col desc, a.name
-                   limit 20"""
-        return self._db.select_all(query, (login,))
+                   order by col desc, a.name"""
+        return self._db.select_all(query, (self._uid,))
 
-    def get_user_favorite(self, login):
-        query = """select t.title
-                   from track t 
-                     inner join playlist_track pt on pt.track_id = t.id
-                     inner join playlist p on p.user_id = pt.user_id
-                       and p.id = pt.playlist_id
-                     inner join user u on u.id = p.user_id
-                   where pt.playlist_id = 3 and u.login = ?
-                   order by t.title
-                   limit 20"""
-        return self._db.select_all(query, (login,))
+    def get_user_favorite(self):
+        query = """select title
+                   from track
+                     inner join playlist_track on track_id = id
+                   where playlist_id = 3 and user_id = ?
+                   order by title"""
+        return self._db.select_all(query, (self._uid,))
 
-    def get_user_genres(self, login):
-        query = """select t.genre, count(*) as col
-                   from track t 
-                     inner join playlist_track pt on pt.track_id = t.id
-                     inner join playlist p on p.user_id = pt.user_id
-                       and p.id = pt.playlist_id
-                     inner join user u on u.id = p.user_id
-                   where t.genre is not null and pt.playlist_id = 3
-                     and u.login = ?
-                   group by t.genre
-                   order by col desc, t.genre
-                   limit 20"""
-        return self._db.select_all(query, (login,))
+    def get_user_genres(self):
+        query = """select genre, count(*) as col
+                   from track
+                     inner join playlist_track on track_id = id
+                   where genre is not null and playlist_id = 3
+                     and user_id = ?
+                   group by genre
+                   order by col desc, genre"""
+        return self._db.select_all(query, (self._uid,))
 
-    def get_user_playlists(self, login):
-        query = """select p.*
-                   from playlist p
-                     inner join user u on u.id = p.user_id
-                   where u.login = ?"""
-        return self._db.select_all(query, (login,))
+    def get_user_playlists(self):
+        query = """select * from playlist where user_id = ?"""
+        return self._db.select_all(query, (self._uid,))
 
 
 class Query(BaseQuery):
-    def delete_playlists(self, uid: int, ids: list):
+    def delete_playlists(self, ids: list):
         signs = ", ".join(["?"] * len(ids))
         self._db.execute(
             f"delete from playlist where id in ({signs}) and user_id = ?",
-            (*ids, uid)
+            (*ids, self._uid)
         )
 
-    def delete_tracks(self, uid: int, kind: int, ids: list):
+    def delete_tracks(self, playlist_id: int, ids: set):
         signs = ", ".join(["?"] * len(ids))
         self._db.execute(
             f"""delete from playlist_track
-                where track_id in ({signs}) 
+                where track_id in ({signs})
                   and user_id = ? and playlist_id = ?""",
-            (ids, uid, kind)
+            (ids, self._uid, playlist_id)
         )
 
     def delete_unused(self):
@@ -97,48 +93,42 @@ class Query(BaseQuery):
     def get_artists_ids(self):
         return self.__get_ids("artist")
 
-    def get_modified(self, uid: int, _id: int):
+    def get_modified(self, _id: int):
         return self._db.select(
             """select modified from playlist
                where user_id = ? and id = ?""",
-            (uid, _id)
+            (self._uid, _id)
         )[0]
 
-    def get_playlist_title(self, uid: int, _id: int):
+    def get_playlist_title(self, _id: int):
         return self._db.select(
             """select title from playlist
                where user_id = ? and id = ?""",
-            (uid, _id)
+            (self._uid, _id)
         )[0]
 
-    def get_playlist_tracks_ids(self, uid: int, _id: int):
+    def get_playlist_tracks_ids(self, _id: int):
         return [
             i[0] for i in self._db.select_all(
                 """select track_id from playlist_track 
                    where user_id = ? and playlist_id = ?""",
-                (uid, _id)
+                (self._uid, _id)
             )
         ]
 
-    def get_playlists_ids(self, uid: int):
+    def get_playlists_ids(self):
         return [
             i[0] for i in self._db.select_all(
-                "select id from playlist where user_id = ?", (uid,)
+                "select id from playlist where user_id = ?", (self._uid,)
             )
         ]
 
     def get_tracks_ids(self):
         return self.__get_ids("track")
 
-    def get_uid(self, login: str):
-        uid = self._db.select(
-            "select id from user where login = ?", (login,)
-        )
-        return uid[0] if uid else None
-
     def init_tables(self):
         self._db.execute_script(
-            """PRAGMA foreign_keys=on;
+            """PRAGMA foreign_keys = on;
 
             create table if not exists user (
                 id integer primary key,
@@ -193,11 +183,13 @@ class Query(BaseQuery):
         self._db.execute_many("insert into artist values (?, ?)", params)
 
     def insert_playlist_tracks(self, params: list):
+        params = self.__get_params_with_uid(params)
         self._db.execute_many(
             "insert into playlist_track values (?, ?, ?)", params
         )
 
     def insert_playlists(self, params: list):
+        params = self.__get_params_with_uid(params)
         self._db.execute_many(
             "insert into playlist values (?, ?, ?, ?, ?, ?)", params
         )
@@ -210,41 +202,41 @@ class Query(BaseQuery):
     def insert_user(self, *params):
         self._db.execute("insert into user values (?, ?, ?, ?)", tuple(params))
 
-    def update_modified(self, uid: int, _id: int, modified: str):
+    def update_modified(self, _id: int, modified: str):
         self._db.execute(
             """update playlist set modified = ?
-               where user_id = ? and id = ?""", (modified, uid, _id)
+               where user_id = ? and id = ?""", (modified, self._uid, _id)
         )
 
-    def update_playlist_duration(self, uid: int, _id: int):
+    def update_playlist_duration(self, _id: int):
         self._db.execute(
             """update playlist set duration = (
                  select sum(duration) 
                  from track
                    inner join playlist_track on track_id = id
                  where user_id = ? and playlist_id = ?)
-               where user_id = ? and id = ?""", (uid, _id, uid, _id)
+               where user_id = ? and id = ?""", (self._uid, _id, self._uid, _id)
         )
 
-    def update_playlist_title(self, uid: int, _id: int, title: str):
+    def update_playlist_title(self, _id: int, title: str):
         self._db.execute(
             "update playlist set title = ? where user_id = ? and id = ?",
-            (title, uid, _id)
+            (title, self._uid, _id)
         )
 
-    def update_playlists_count(self, uid: int, count: int):
+    def update_playlists_count(self, count: int):
         self._db.execute(
             "update user set playlists_count = ? where id = ?",
-            (count, uid)
+            (count, self._uid)
         )
 
-    def update_tracks_count(self, uid: int, _id: int):
+    def update_tracks_count(self, _id: int):
         self._db.execute(
             """update playlist set tracks_count = (
                  select count(*)
                  from playlist_track
                  where user_id = ? and playlist_id = ?)
-               where user_id = ? and id = ?""", (uid, _id, uid, _id)
+               where user_id = ? and id = ?""", (self._uid, _id, self._uid, _id)
         )
 
     def __delete_unused_artists(self):
@@ -263,3 +255,6 @@ class Query(BaseQuery):
 
     def __get_ids(self, table: str):
         return [i[0] for i in self._db.select_all(f"select id from {table}")]
+
+    def __get_params_with_uid(self, params: list):
+        return [tuple([self._uid, *i]) for i in params]

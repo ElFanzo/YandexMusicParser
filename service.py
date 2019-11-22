@@ -11,20 +11,18 @@ class Service:
     """
 
     def __init__(self, login: str):
-        self.__query = Query()
+        self.__login = login
+        self.__query = Query(login)
         self.__query.init_tables()
 
-        self.__login = login
-        self.__uid = self.__query.get_uid(self.__login)
-
-        if not self.__uid:
+        if not self.__query.user_name:
             self.__check()
             self.__download()
 
     def update(self):
         """Update database."""
         common = self.__common_info()
-        local_ids = self.__query.get_playlists_ids(self.__uid)
+        local_ids = self.__query.get_playlists_ids()
         remote_ids = common["playlistIds"]
         diff = Service.__get_differences(local_ids, remote_ids)
 
@@ -62,9 +60,9 @@ class Service:
             if diff["add"]:
                 self.__add_new_playlists(common, diff["add"])
             if diff["delete"]:
-                self.__query.delete_playlists(self.__uid, diff["delete"])
+                self.__query.delete_playlists(diff["delete"])
 
-            self.__query.update_playlists_count(self.__uid, len(remote_ids))
+            self.__query.update_playlists_count(len(remote_ids))
 
     def __add_new_playlists(self, common, ids):
         self.__add_playlists(common, ids)
@@ -73,7 +71,6 @@ class Service:
     def __add_playlists(self, common, ids_to_add):
         params = [
             (
-                self.__uid,
                 playlist["kind"],
                 playlist["title"],
                 playlist["trackCount"],
@@ -93,7 +90,7 @@ class Service:
                 set([int(str(i).split(":")[0]) for i in playlist["trackIds"]])
             )
 
-            self.__query.update_playlist_duration(self.__uid, _id)
+            self.__query.update_playlist_duration(_id)
 
     def __add_tracks(self, tracks, playlist_id, ids_to_add):
         tracks_ids = self.__query.get_tracks_ids()
@@ -116,17 +113,17 @@ class Service:
 
         self.__query.insert_tracks(params)
 
-        params = [(self.__uid, playlist_id, _id) for _id in ids_to_add]
+        params = [(playlist_id, _id) for _id in ids_to_add]
         self.__query.insert_playlist_tracks(params)
 
         self.__add_artists(tracks, ids_to_add)
 
     def __add_user(self, common):
-        self.__uid = common["owner"]["uid"]
+        uid = common["owner"]["uid"]
         name = common["owner"]["name"]
         playlists_count = len(common["playlistIds"])
 
-        self.__query.insert_user(self.__uid, self.__login, name, playlists_count)
+        self.__query.insert_user(uid, self.__login, name, playlists_count)
 
     def __check(self):
         """Check if profile is private or does not exist."""
@@ -174,18 +171,18 @@ class Service:
             new_title = playlist["title"]
             new_modified = playlist.get("modified")
 
-            if self.__query.get_playlist_title(self.__uid, _id) != new_title:
-                self.__query.update_playlist_title(self.__uid, _id, new_title)
+            if self.__query.get_playlist_title(_id) != new_title:
+                self.__query.update_playlist_title(_id, new_title)
 
             if not new_modified:
                 self.__update_playlist(_id)
-            elif self.__query.get_modified(self.__uid, _id) != new_modified:
+            elif self.__query.get_modified(_id) != new_modified:
                 self.__update_playlist(_id)
-                self.__query.update_modified(self.__uid, _id, new_modified)
+                self.__query.update_modified(_id, new_modified)
 
     def __update_playlist(self, _id):
         playlist = self.__get_playlist(_id)
-        local_ids = self.__query.get_playlist_tracks_ids(self.__uid, _id)
+        local_ids = self.__query.get_playlist_tracks_ids(_id)
         remote_ids = [int(str(i).split(":")[0]) for i in playlist["trackIds"]]
 
         diff = Service.__get_differences(local_ids, remote_ids)
@@ -193,7 +190,7 @@ class Service:
             if diff["add"]:
                 self.__add_tracks(playlist["tracks"], _id, diff["add"])
             if diff["delete"]:
-                self.__query.delete_tracks(self.__uid, _id, diff["delete"])
+                self.__query.delete_tracks(_id, diff["delete"])
 
-            self.__query.update_tracks_count(self.__uid, _id)
-            self.__query.update_playlist_duration(self.__uid, _id)
+            self.__query.update_tracks_count(_id)
+            self.__query.update_playlist_duration(_id)
