@@ -1,6 +1,9 @@
 # python cache
 *.pyc
 
+# IDE files
+.idea/
+
 # database
 *.db
 
