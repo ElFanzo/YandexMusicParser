@@ -188,7 +188,7 @@ class Service:
         local_ids = self.__query.get_playlist_tracks_ids(self.__uid, _id)
         remote_ids = [int(str(i).split(":")[0]) for i in playlist["trackIds"]]
 
-        diff = Data.__get_differences(local_ids, remote_ids)
+        diff = Service.__get_differences(local_ids, remote_ids)
         if diff:
             if diff["add"]:
                 self.__add_tracks(playlist["tracks"], _id, diff["add"])
