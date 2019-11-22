@@ -28,7 +28,7 @@ class Service:
         remote_ids = common["playlistIds"]
         diff = Service.__get_differences(local_ids, remote_ids)
 
-        self.__add_delete_playlists(common, diff, local_ids, remote_ids)
+        self.__add_delete_playlists(common, diff, remote_ids)
 
         existed_ids = set(local_ids) - (diff["delete"] if diff else set())
         self.__update_existed(
@@ -56,7 +56,7 @@ class Service:
         self.__query.insert_artists(artists_params)
         self.__query.insert_artist_track(artist_track_params)
 
-    def __add_delete_playlists(self, common, diff, local_ids, remote_ids):
+    def __add_delete_playlists(self, common, diff, remote_ids):
         """Add new, delete existed."""
         if diff:
             if diff["add"]:
