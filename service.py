@@ -36,19 +36,23 @@ class Service:
 
     def __add_artists(self, tracks, ids_to_add):
         artists_ids = self.__query.get_artists_ids()
+        artist_track_ids = self.__query.get_artist_track_ids()
         artists_params = []
         artist_track_params = []
 
         for track in tracks:
-            if int(track["id"]) in ids_to_add:
+            track_id = int(track["id"])
+            if track_id in ids_to_add:
                 for artist in track["artists"]:
-                    artist_id = int(artist["id"])
+                    artist_track = (int(artist["id"]), track_id)
 
-                    if artist_id not in artists_ids:
-                        artists_params.append((artist_id, artist["name"]))
-                        artists_ids.append(artist_id)
+                    if artist_track[0] not in artists_ids:
+                        artists_params.append((artist_track[0], artist["name"]))
+                        artists_ids.append(artist_track[0])
 
-                    artist_track_params.append((artist_id, track["id"]))
+                    if artist_track not in artist_track_ids \
+                            and artist_track not in artist_track_params:
+                        artist_track_params.append(artist_track)
 
         self.__query.insert_artists(artists_params)
         self.__query.insert_artist_track(artist_track_params)
