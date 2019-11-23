@@ -90,6 +90,9 @@ class Query(BaseQuery):
     def get_artists_ids(self):
         return self.__get_ids("artist")
 
+    def get_artist_track_ids(self):
+        return self._db.select_all("select * from artist_track")
+
     def get_modified(self, _id: int):
         return self._db.select(
             """select modified from playlist
