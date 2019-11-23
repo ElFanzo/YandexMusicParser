@@ -5,19 +5,25 @@ class Artist:
     """An artist's data storing class.
 
     Args:
+        id_: the artist's real id
         name: the artist's name
-        tracks: a list of the artst's tracks
+        tracks: a list of the artist's tracks
+        tracks_count: the artist's tracks count
         genres: the artist's genres
 
     Attributes:
+        id_:
         name:
         tracks:
+        tracks_count:
         genres:
     """
 
-    def __init__(self, name: str, tracks: list, genres: list):
+    def __init__(self, id_: int, name: str, tracks: list, tracks_count: int, genres: list):
+        self.id_ = id_
         self.name = name
         self.tracks = tracks
+        self.tracks_count = tracks_count
         self.genres = genres
 
     def __str__(self):
@@ -28,25 +34,34 @@ class Playlist:
     """A playlist's data storing class.
 
     Args:
+        query: UserQuery object for queries execution
+        id_: the playlist's kind value
         title: the playlist's title
         tracks: a list of the playlist's tracks
+        tracks_count: the playlist's tracks count
         duration: total duration of the playlist
         modified: last modified datetime
 
     Attributes:
+        id_:
         title:
         tracks:
-        duration:
-        duration_ms:
+        tracks_count:
+        duration: total duration in the "%H h. %M min. %S sec." format
+        duration_ms: total durartion in milliseconds
         modified:
     """
 
-    def __init__(self, title: str, tracks: list, duration: int, modified: str):
+    def __init__(self, query, id_: int, title: str, tracks_count: int, duration: int, modified: str, tracks: list):
+        self.id_ = id_
         self.title = title
         self.tracks = tracks
+        self.tracks_count = tracks_count
         self.duration_ms = duration
         self.duration = Playlist.__format_ms(self.duration_ms)
-        self.modified = Playlist.__utc_to_local(modified)
+        self.modified = Playlist.__utc_to_local(modified) if modified else None
+
+        self.__query = query
 
     @staticmethod
     def __format_ms(total_ms: int) -> str:
@@ -64,63 +79,43 @@ class Playlist:
     @staticmethod
     def __utc_to_local(date_utc: str) -> datetime:
         date_utc = datetime.fromisoformat(date_utc)
-        return (date_utc.replace(tzinfo=timezone.utc).astimezone())
+        return date_utc.replace(tzinfo=timezone.utc).astimezone()
 
     def __str__(self):
         return f"Playlist({self.title}, {len(self.tracks)} track(s))"
 
 
-class User:
-    """A user's data storing class.
-
-    Args:
-        login: the user's login
-        playlists: a list of the user's playlists
-
-    Attributes:
-        login:
-        name: the user's name
-        playlists:
-    """
-
-    def __init__(self, login: str, playlists: list):
-        self.login = login
-        self.name = self.get_name()
-        self.playlists = playlists
-
-    def get_name(self):
-        pass
-
-    def __str__(self):
-        return (
-            f"User {self.login}({self.name},"
-            "{len(self.playlists)} playlist(s))"
-        )
-
-
 class Track:
-    """Playlist's data storing class.
+    """A track's data storing class.
 
     Args:
-        title: a playlist's title
-        tracks: a list of playlist's tracks
-        duration: total duration of the playlist
-        modified: last modified datetime
+        id_: the track's real id
+        title: the track's title
+        artists: a list of track's artists
+        artists_count: the track's artists count
+        year: the track's release year
+        genre: the track's genre
+        duration: duration of the track
 
     Attributes:
-        title: str
-        tracks: List<Track>
-        duration: str
-        duration_ms: int
-        modified: datetime
+        id_:
+        title:
+        artists:
+        artists_count:
+        year:
+        genre:
+        duration: duration in the "%M min. %S sec." format
+        duration_ms: duration in milliseconds
     """
 
-    def __init__(self, title: str, tracks: list, duration: int, modified: datetime):
+    def __init__(self, id_: int, title: str, year: int, genre: str, duration: int, artists: list, artists_count: int):
+        self.id_ = id_
         self.title = title
         self.artists = artists
+        self.artists_count = artists_count
         self.year = year
         self.genre = genre
-        self.duration_ms = duration_ms
+        self.duration_ms = duration
         self.duration = Track.__format_ms(self.duration_ms)
 
     @staticmethod
@@ -136,4 +131,35 @@ class Track:
         return f"{minutes} min. {seconds % 60} sec."
 
     def __str__(self):
-        return f"Track({self.title}, Artist(s): {self.artists})"
+        return f"{' ft. '.join([i.name for i in self.artists])} - {self.title}"
+
+
+class User:
+    """A user's data storing class.
+
+    Args:
+        query: the UserQuery object for queries execution
+        login: the user's login
+        playlists: a list of the user's playlists
+        playlists_count: the user's playlists count
+
+    Attributes:
+        login:
+        name: the user's name
+        playlists:
+        playlists_count:
+    """
+
+    def __init__(self, query, login: str, playlists_count: int, playlists: list):
+        self.login = login
+        self.name = query.user_name
+        self.playlists = playlists
+        self.playlists_count = playlists_count
+
+        self.__query = query
+
+    def __str__(self):
+        return (
+            f"User {self.login}({self.name}, "
+            f"{len(self.playlists)} playlist(s))"
+        )
