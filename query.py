@@ -5,11 +5,64 @@ class BaseQuery:
     """Queries executing class."""
     def __init__(self, login: str):
         self._db = DataCtx()
+        self.__init_tables()
+
         self.user_name, self._uid = self.__get_user_data(login)
 
     def __get_user_data(self, login: str):
-        return self._db.select(
+        data = self._db.select(
             "select name, id from user where login = ?", (login,)
+        )
+        return data if data else (None, None)
+
+    def __init_tables(self):
+        self._db.execute_script(
+            """PRAGMA foreign_keys = on;
+
+            create table if not exists user (
+                id integer primary key,
+                login text unique not null,
+                name text not null,
+                playlists_count integer);
+
+            create table if not exists playlist (
+                user_id integer,
+                id integer,
+                title text not null,
+                tracks_count integer,
+                duration integer,
+                modified text,
+                primary key (user_id, id),
+                foreign key (user_id) references user(id) on delete cascade);
+
+            create table if not exists track (
+                id integer primary key,
+                title text not null,
+                year integer,
+                genre text,
+                duration integer);
+
+            create table if not exists artist (
+                id integer primary key,
+                name text not null);
+
+            create table if not exists playlist_track (
+                user_id integer,
+                playlist_id integer,
+                track_id integer,
+                primary key (user_id, playlist_id, track_id)
+                foreign key (user_id, playlist_id) references
+                  playlist(user_id, id) on delete cascade,
+                foreign key (track_id) references track(id) on delete cascade);
+
+            create table if not exists artist_track (
+                artist_id integer,
+                track_id integer,
+                primary key (artist_id, track_id),
+                foreign key (artist_id) references artist(id)
+                  on delete cascade,
+                foreign key (track_id) references track(id)
+                  on delete cascade);"""
         )
 
 
@@ -70,54 +123,6 @@ class Query(BaseQuery):
     def get_tracks_ids(self):
         return self.__get_ids("track")
 
-    def init_tables(self):
-        self._db.execute_script(
-            """PRAGMA foreign_keys = on;
-
-            create table if not exists user (
-                id integer primary key,
-                login text unique not null,
-                name text not null,
-                playlists_count integer);
-
-            create table if not exists playlist (
-                user_id integer,
-                id integer,
-                title text not null,
-                tracks_count integer,
-                duration integer,
-                modified text,
-                primary key (user_id, id),
-                foreign key (user_id) references user(id) on delete cascade);
-
-            create table if not exists track (
-                id integer primary key,
-                title text not null,
-                year integer,
-                genre text,
-                duration integer);
-
-            create table if not exists artist (
-                id integer primary key,
-                name text not null);
-
-            create table if not exists playlist_track (
-                user_id integer,
-                playlist_id integer,
-                track_id integer,
-                foreign key (user_id, playlist_id) references
-                  playlist(user_id, id) on delete cascade,
-                foreign key (track_id) references track(id) on delete cascade);
-
-            create table if not exists artist_track (
-                artist_id integer,
-                track_id integer,
-                foreign key (artist_id) references artist(id)
-                  on delete cascade,
-                foreign key (track_id) references track(id)
-                  on delete cascade);"""
-        )
-
     def insert_artist_track(self, params: list):
         self._db.execute_many(
             "insert into artist_track values (?, ?)", params
@@ -145,6 +150,7 @@ class Query(BaseQuery):
 
     def insert_user(self, *params):
         self._db.execute("insert into user values (?, ?, ?, ?)", tuple(params))
+        self._uid = params[0]
 
     def update_modified(self, _id: int, modified: str):
         self._db.execute(
