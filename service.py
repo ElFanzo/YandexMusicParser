@@ -13,7 +13,6 @@ class Service:
     def __init__(self, login: str):
         self.__login = login
         self.__query = Query(login)
-        self.__query.init_tables()
 
         if not self.__query.user_name:
             self.__check()
