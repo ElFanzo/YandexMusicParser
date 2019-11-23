@@ -229,14 +229,6 @@ class UserQuery(BaseQuery):
                    where pt.user_id = ? and pt.playlist_id = ? and at.artist_id = ?"""
         return [i[0] for i in self._db.select_all(query, (self._uid, playlist_id, artist_id,))]
 
-    def get_favorite_tracks(self):  # TODO: Call get_playlist_tracks
-        query = """select title
-                   from track
-                     inner join playlist_track on track_id = id
-                   where playlist_id = 3 and user_id = ?
-                   order by title"""
-        return self._db.select_all(query, (self._uid,))
-
     def get_genre_artists(self, genre):
         query = """select name
                    from artist
