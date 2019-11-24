@@ -84,7 +84,8 @@ class Service:
                 playlist["trackCount"],
                 0,
                 playlist.get("modified")
-            ) for playlist in common["playlists"]
+            )
+            for playlist in common["playlists"]
             if playlist["kind"] in ids_to_add
         ]
 

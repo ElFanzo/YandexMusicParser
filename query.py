@@ -3,6 +3,7 @@ from database import DataCtx
 
 class BaseQuery:
     """Queries executing class."""
+
     def __init__(self, login: str):
         self._db = DataCtx()
         self.__init_tables()
@@ -161,7 +162,8 @@ class Query(BaseQuery):
     def update_modified(self, _id: int, modified: str):
         self._db.execute(
             """update playlist set modified = ?
-               where user_id = ? and id = ?""", (modified, self._uid, _id)
+               where user_id = ? and id = ?""",
+            (modified, self._uid, _id)
         )
 
     def update_playlist_duration(self, _id: int):
