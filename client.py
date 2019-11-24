@@ -72,12 +72,17 @@ class Client:
             for i in query.get_playlist_tracks(playlist.id_)
         }
         all_artists = {
-            i[0]: Artist(*i, tracks=[], tracks_count=0, genres=query.get_artist_genres(i[0]))
+            i[0]: Artist(
+                *i, tracks=[], tracks_count=0,
+                genres=query.get_artist_genres(i[0])
+            )
             for i in query.get_playlist_artists(playlist.id_)
         }
 
         Client.__bind_artists_to_tracks(query, all_tracks, all_artists)
-        Client.__bind_tracks_to_artists(query, all_tracks, all_artists, playlist.id_)
+        Client.__bind_tracks_to_artists(
+            query, all_tracks, all_artists, playlist.id_
+        )
 
         playlist.tracks = [i for i in all_tracks.values()]
         playlist.tracks_count = len(playlist.tracks)

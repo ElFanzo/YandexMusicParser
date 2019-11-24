@@ -53,7 +53,8 @@ class BaseQuery:
                 primary key (user_id, playlist_id, track_id)
                 foreign key (user_id, playlist_id) references
                   playlist(user_id, id) on delete cascade,
-                foreign key (track_id) references track(id) on delete cascade);
+                foreign key (track_id) references track(id)
+                  on delete cascade);
 
             create table if not exists artist_track (
                 artist_id integer,
@@ -110,7 +111,7 @@ class Query(BaseQuery):
     def get_playlist_tracks_ids(self, _id: int):
         return [
             i[0] for i in self._db.select_all(
-                """select track_id from playlist_track 
+                """select track_id from playlist_track
                    where user_id = ? and playlist_id = ?""",
                 (self._uid, _id)
             )
@@ -152,7 +153,9 @@ class Query(BaseQuery):
         )
 
     def insert_user(self, *params):
-        self._db.execute("insert into user values (?, ?, ?, ?)", tuple(params))
+        self._db.execute(
+            "insert into user values (?, ?, ?, ?)", tuple(params)
+        )
         self._uid = params[0]
 
     def update_modified(self, _id: int, modified: str):
@@ -164,11 +167,12 @@ class Query(BaseQuery):
     def update_playlist_duration(self, _id: int):
         self._db.execute(
             """update playlist set duration = (
-                 select sum(duration) 
+                 select sum(duration)
                  from track
                    inner join playlist_track on track_id = id
                  where user_id = ? and playlist_id = ?)
-               where user_id = ? and id = ?""", (self._uid, _id, self._uid, _id)
+               where user_id = ? and id = ?""",
+            (self._uid, _id, self._uid, _id)
         )
 
     def update_playlist_title(self, _id: int, title: str):
@@ -189,7 +193,8 @@ class Query(BaseQuery):
                  select count(*)
                  from playlist_track
                  where user_id = ? and playlist_id = ?)
-               where user_id = ? and id = ?""", (self._uid, _id, self._uid, _id)
+               where user_id = ? and id = ?""",
+            (self._uid, _id, self._uid, _id)
         )
 
     def __delete_unused_artists(self):
@@ -226,8 +231,13 @@ class UserQuery(BaseQuery):
                    from artist_track at
                      inner join track t on t.id = at.track_id
                      inner join playlist_track pt on pt.track_id = t.id
-                   where pt.user_id = ? and pt.playlist_id = ? and at.artist_id = ?"""
-        return [i[0] for i in self._db.select_all(query, (self._uid, playlist_id, artist_id,))]
+                   where pt.user_id = ? and pt.playlist_id = ?
+                     and at.artist_id = ?"""
+        return [
+            i[0] for i in self._db.select_all(
+                query, (self._uid, playlist_id, artist_id,)
+            )
+        ]
 
     def get_genre_artists(self, genre):
         query = """select name
@@ -285,6 +295,6 @@ class UserQuery(BaseQuery):
         return self._db.select_all(query, (self._uid,))
 
     def get_user_playlists(self):
-        query = """select id, title, tracks_count, duration, modified 
+        query = """select id, title, tracks_count, duration, modified
                    from playlist where user_id = ?"""
         return self._db.select_all(query, (self._uid,))

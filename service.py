@@ -50,7 +50,9 @@ class Service:
                     artist_track = (int(artist["id"]), track_id)
 
                     if artist_track[0] not in artists_ids:
-                        artists_params.append((artist_track[0], artist["name"]))
+                        artists_params.append(
+                            (artist_track[0], artist["name"])
+                        )
                         artists_ids.append(artist_track[0])
 
                     if artist_track not in artist_track_ids \
@@ -82,7 +84,8 @@ class Service:
                 playlist["trackCount"],
                 0,
                 playlist.get("modified")
-            ) for playlist in common["playlists"] if playlist["kind"] in ids_to_add
+            ) for playlist in common["playlists"]
+            if playlist["kind"] in ids_to_add
         ]
 
         self.__query.insert_playlists(params)
@@ -169,7 +172,9 @@ class Service:
         return diff if diff["add"] or diff["delete"] else None
 
     def __get_playlist(self, _id):
-        return Connection().get_json("playlist", self.__login, _id)["playlist"]
+        return Connection().get_json(
+            "playlist", self.__login, _id
+        )["playlist"]
 
     def __update_existed(self, existed):
         for playlist in existed:

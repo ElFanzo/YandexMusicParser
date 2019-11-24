@@ -19,7 +19,8 @@ class Artist:
         genres:
     """
 
-    def __init__(self, id_: int, name: str, tracks: list, tracks_count: int, genres: list):
+    def __init__(self, id_: int, name: str, tracks: list,
+                 tracks_count: int, genres: list):
         self.id_ = id_
         self.name = name
         self.tracks = tracks
@@ -52,14 +53,16 @@ class Playlist:
         modified:
     """
 
-    def __init__(self, query, id_: int, title: str, tracks_count: int, duration: int, modified: str, tracks: list):
+    def __init__(self, query, id_: int, title: str, tracks_count: int,
+                 duration: int, modified: str, tracks: list):
         self.id_ = id_
         self.title = title
         self.tracks = tracks
         self.tracks_count = tracks_count
         self.duration_ms = duration
         self.duration = Playlist.__format_ms(self.duration_ms)
-        self.modified = Playlist.__utc_to_local(modified) if modified else None
+        self.modified = Playlist.__utc_to_local(modified) \
+            if modified else None
 
         self.__query = query
 
@@ -108,7 +111,8 @@ class Track:
         duration_ms: duration in milliseconds
     """
 
-    def __init__(self, id_: int, title: str, year: int, genre: str, duration: int, artists: list, artists_count: int):
+    def __init__(self, id_: int, title: str, year: int, genre: str,
+                 duration: int, artists: list, artists_count: int):
         self.id_ = id_
         self.title = title
         self.artists = artists
@@ -131,7 +135,8 @@ class Track:
         return f"{minutes} min. {seconds % 60} sec."
 
     def __str__(self):
-        return f"{' ft. '.join([i.name for i in self.artists])} - {self.title}"
+        return f"{' ft. '.join([i.name for i in self.artists])}"\
+               f" - {self.title}"
 
 
 class User:
@@ -150,7 +155,8 @@ class User:
         playlists_count:
     """
 
-    def __init__(self, query, login: str, playlists_count: int, playlists: list):
+    def __init__(self, query, login: str, playlists_count: int,
+                 playlists: list):
         self.login = login
         self.name = query.user_name
         self.playlists = playlists
