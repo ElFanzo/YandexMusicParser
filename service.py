@@ -1,6 +1,6 @@
-from query import Query
 from log import flash
 from network import Connection
+from query import Query
 
 
 class Service:

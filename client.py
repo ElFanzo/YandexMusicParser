@@ -1,8 +1,8 @@
 from grab.error import GrabConnectionError
 
-from query import UserQuery
 from log import flash
 from models import Artist, Playlist, Track, User
+from query import UserQuery
 from service import Service
 
 
