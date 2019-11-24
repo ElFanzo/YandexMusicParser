@@ -36,11 +36,12 @@ class Client:
         flash(msg="UPD")
         try:
             self.__service.update()
-            self.__set_data()
         except GrabConnectionError:
             flash(msg="ERR_NET_BUT_CACHE")
         except AttributeError:
             flash(msg="ERR_UPD")
+        else:
+            self.__set_data()
 
     def __set_data(self):
         query = UserQuery(self.__login)
