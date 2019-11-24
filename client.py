@@ -44,6 +44,7 @@ class Client:
             self.__set_data()
 
     def __set_data(self):
+        """Create a user and other entities from the database data."""
         query = UserQuery(self.__login)
         db_playlists = query.get_user_playlists()
 
