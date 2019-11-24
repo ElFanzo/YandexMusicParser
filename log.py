@@ -8,11 +8,12 @@ msg = {
     "DONE": "Done!",
     "ERR_ACCESS": "The account of the user '{}' is private!",
     "ERR_BUT_DB": "You can still get your data from the database.",
+    "ERR_LOGIN": "The 'login' argument type must be a string!",
     "ERR_NET": (
         "Internet is not available. "
         "Please, check your connection and try again."
     ),
-    "ERR_UPD": "Update method is not available for this object.",
+    "ERR_UPD": "Update method is not available for this object!",
     "ERR_USER": "The user '{}' does not exist!",
     "UPD": "Please, wait. Your data is being updated...",
     "USER_SUCCESS": (

@@ -21,16 +21,20 @@ class Client:
     def __init__(self, login: str):
         self.user = None
 
-        self.__login = login
         try:
-            self.__service = Service(self.__login)
-        except GrabConnectionError:
-            flash(msg="ERR_MSG")
-        except KeyError:
-            pass
+            self.__login = login.strip().lower().replace("@yandex.ru", "")
+        except AttributeError:
+            flash(msg="ERR_LOGIN")
         else:
-            self.__set_data()
-            flash(msg="USER_SUCCESS")
+            try:
+                self.__service = Service(self.__login)
+            except GrabConnectionError:
+                flash(msg="ERR_MSG")
+            except KeyError:
+                pass
+            else:
+                self.__set_data()
+                flash(msg="USER_SUCCESS")
 
     def update(self):
         """Update client's data."""
