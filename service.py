@@ -12,10 +12,13 @@ class Service:
 
     def __init__(self, login: str):
         self.__login = login
+        flash(msg="DB_SEARCH")
         self.__query = Query(login)
 
         if not self.__query.user_name:
+            flash(msg="DB_FAIL")
             self.__check()
+            flash(msg="DB_DOWNLOAD")
             self.__download()
 
     def update(self):

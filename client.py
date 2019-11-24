@@ -30,6 +30,7 @@ class Client:
             pass
         else:
             self.__set_data()
+            flash(msg="USER_SUCCESS")
 
     def update(self):
         """Update client's data."""
@@ -37,11 +38,13 @@ class Client:
         try:
             self.__service.update()
         except GrabConnectionError:
-            flash(msg="ERR_NET_BUT_CACHE")
+            flash(msg="ERR_NET")
+            flash(msg="ERR_BUT_DB")
         except AttributeError:
             flash(msg="ERR_UPD")
         else:
             self.__set_data()
+            flash(msg="DONE")
 
     def __set_data(self):
         """Create a user and other entities from the database data."""
