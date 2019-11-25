@@ -10,6 +10,24 @@ class BaseQuery:
 
         self.user_name, self._uid = self.__get_user_data(login)
 
+    def delete_unused(self):
+        self.__delete_unused_tracks()
+        self.__delete_unused_artists()
+
+    def __delete_unused_artists(self):
+        self._db.execute(
+            """delete from artist
+               where id not in (
+                 select artist_id from artist_track)"""
+        )
+
+    def __delete_unused_tracks(self):
+        self._db.execute(
+            """delete from track
+               where id not in (
+                 select track_id from playlist_track)"""
+        )
+
     def __get_user_data(self, login: str):
         data = self._db.select(
             "select name, id from user where login = ?", (login,)
@@ -84,10 +102,6 @@ class Query(BaseQuery):
                   and user_id = ? and playlist_id = ?""",
             (ids, self._uid, playlist_id)
         )
-
-    def delete_unused(self):
-        self.__delete_unused_tracks()
-        self.__delete_unused_artists()
 
     def get_artists_ids(self):
         return self.__get_ids("artist")
@@ -197,20 +211,6 @@ class Query(BaseQuery):
                  where user_id = ? and playlist_id = ?)
                where user_id = ? and id = ?""",
             (self._uid, _id, self._uid, _id)
-        )
-
-    def __delete_unused_artists(self):
-        self._db.execute(
-            """delete from artist
-               where id not in (
-                 select artist_id from artist_track)"""
-        )
-
-    def __delete_unused_tracks(self):
-        self._db.execute(
-            """delete from track
-               where id not in (
-                 select track_id from playlist_track)"""
         )
 
     def __get_ids(self, table: str):
