@@ -182,6 +182,11 @@ class Query(BaseQuery):
     def get_tracks_ids(self):
         return self.__get_ids("track")
 
+    def get_user_playlists(self):
+        query = """select id, title, tracks_count, duration, modified
+                   from playlist where user_id = ?"""
+        return self._db.select_all(query, (self._uid,))
+
     def insert_artist_track(self, params: list):
         self._db.execute_many(
             "insert into artist_track values (?, ?)", params
@@ -298,9 +303,4 @@ class UserQuery(BaseQuery):
                      and user_id = ?
                    group by genre
                    order by col desc, genre"""
-        return self._db.select_all(query, (self._uid,))
-
-    def get_user_playlists(self):
-        query = """select id, title, tracks_count, duration, modified
-                   from playlist where user_id = ?"""
         return self._db.select_all(query, (self._uid,))

@@ -2,7 +2,7 @@ from grab.error import GrabConnectionError
 
 from log import flash
 from models import Artist, Playlist, Track, User
-from query import UserQuery
+from query import Query, UserQuery
 from service import Service
 
 
@@ -52,13 +52,15 @@ class Client:
 
     def __set_data(self):
         """Create a user and other entities from the database data."""
-        query = UserQuery(self.__login)
+        query = Query(self.__login)
+        user_query = UserQuery(self.__login)
+
         db_playlists = query.get_user_playlists()
 
-        self.__set_user(query, len(db_playlists))
+        self.__set_user(user_query, len(db_playlists))
 
         for playlist in db_playlists:
-            self.__set_playlists(query, playlist)
+            self.__set_playlists(user_query, playlist)
 
         for playlist in self.user.playlists:
             Client.__set_tracks_artists(query, playlist)
