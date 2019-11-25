@@ -174,6 +174,14 @@ class User:
         else:
             flash(msg="DEL_ALREADY", login=self.login)
 
+    def get_artists_counter(self):
+        """Get a dict with {Artist name: count} items."""
+        return self.__query.get_artists_counter()
+
+    def get_genres_counter(self):
+        """Get a dict with {Genre: count} items."""
+        return self.__query.get_genres_counter()
+
     def __str__(self):
         return (
             f"User {self.login}({self.name}, "
