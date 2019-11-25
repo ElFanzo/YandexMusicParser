@@ -231,8 +231,7 @@ class UserQuery(BaseQuery):
     def get_artist_tracks_ids(self, playlist_id, artist_id):
         query = """select at.track_id
                    from artist_track at
-                     inner join track t on t.id = at.track_id
-                     inner join playlist_track pt on pt.track_id = t.id
+                     inner join playlist_track pt on pt.track_id = at.track_id
                    where pt.user_id = ? and pt.playlist_id = ?
                      and at.artist_id = ?"""
         return [
@@ -257,8 +256,7 @@ class UserQuery(BaseQuery):
         query = """select distinct a.*
                    from artist a
                      inner join artist_track at on at.artist_id = a.id
-                     inner join track t on t.id = at.track_id
-                     inner join playlist_track pt on pt.track_id = t.id
+                     inner join playlist_track pt on pt.track_id = at.track_id
                    where playlist_id = ? and user_id = ?"""
         return self._db.select_all(query, (_id, self._uid,))
 
@@ -279,8 +277,7 @@ class UserQuery(BaseQuery):
         query = """select a.name, count(*) as col
                    from artist a
                      inner join artist_track at on at.artist_id = a.id
-                     inner join track t on t.id = at.track_id
-                     inner join playlist_track pt on pt.track_id = t.id
+                     inner join playlist_track pt on pt.track_id = at.track_id
                    where pt.playlist_id = 3 and pt.user_id = ?
                    group by a.name
                    order by col desc, a.name"""
