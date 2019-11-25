@@ -103,11 +103,30 @@ class Query(BaseQuery):
             (ids, self._uid, playlist_id)
         )
 
-    def get_artists_ids(self):
-        return self.__get_ids("artist")
+    def get_artist_genres(self, _id):
+        query = """select distinct track.genre
+                   from track
+                     inner join artist_track on track_id = id
+                   where artist_id = ?"""
+        return [i[0] for i in self._db.select_all(query, (_id,))]
 
     def get_artist_track_ids(self):
         return self._db.select_all("select * from artist_track")
+
+    def get_artist_tracks_ids(self, playlist_id, artist_id):
+        query = """select at.track_id
+                   from artist_track at
+                     inner join playlist_track pt on pt.track_id = at.track_id
+                   where pt.user_id = ? and pt.playlist_id = ?
+                     and at.artist_id = ?"""
+        return [
+            i[0] for i in self._db.select_all(
+                query, (self._uid, playlist_id, artist_id,)
+            )
+        ]
+
+    def get_artists_ids(self):
+        return self.__get_ids("artist")
 
     def get_modified(self, _id: int):
         return self._db.select(
@@ -116,12 +135,27 @@ class Query(BaseQuery):
             (self._uid, _id)
         )[0]
 
+    def get_playlist_artists(self, _id):
+        query = """select distinct a.*
+                   from artist a
+                     inner join artist_track at on at.artist_id = a.id
+                     inner join playlist_track pt on pt.track_id = at.track_id
+                   where playlist_id = ? and user_id = ?"""
+        return self._db.select_all(query, (_id, self._uid,))
+
     def get_playlist_title(self, _id: int):
         return self._db.select(
             """select title from playlist
                where user_id = ? and id = ?""",
             (self._uid, _id)
         )[0]
+
+    def get_playlist_tracks(self, _id):
+        query = """select track.*
+                   from track
+                     inner join playlist_track on track_id = id
+                   where playlist_id = ? and user_id = ?"""
+        return self._db.select_all(query, (_id, self._uid,))
 
     def get_playlist_tracks_ids(self, _id: int):
         return [
@@ -138,6 +172,12 @@ class Query(BaseQuery):
                 "select id from playlist where user_id = ?", (self._uid,)
             )
         ]
+
+    def get_track_artists_ids(self, _id):
+        query = """select artist_id
+                   from artist_track
+                   where track_id = ?"""
+        return [i[0] for i in self._db.select_all(query, (_id,))]
 
     def get_tracks_ids(self):
         return self.__get_ids("track")
@@ -228,25 +268,6 @@ class UserQuery(BaseQuery):
 
         self.user_name = None
 
-    def get_artist_genres(self, _id):
-        query = """select distinct track.genre
-                   from track
-                     inner join artist_track on track_id = id
-                   where artist_id = ?"""
-        return [i[0] for i in self._db.select_all(query, (_id,))]
-
-    def get_artist_tracks_ids(self, playlist_id, artist_id):
-        query = """select at.track_id
-                   from artist_track at
-                     inner join playlist_track pt on pt.track_id = at.track_id
-                   where pt.user_id = ? and pt.playlist_id = ?
-                     and at.artist_id = ?"""
-        return [
-            i[0] for i in self._db.select_all(
-                query, (self._uid, playlist_id, artist_id,)
-            )
-        ]
-
     def get_genre_artists(self, genre):
         query = """select name
                    from artist
@@ -258,27 +279,6 @@ class UserQuery(BaseQuery):
                      where pt.user_id = ? and t.genre = ?)
                    order by name"""
         return self._db.select_all(query, (self._uid, genre))
-
-    def get_playlist_artists(self, _id):
-        query = """select distinct a.*
-                   from artist a
-                     inner join artist_track at on at.artist_id = a.id
-                     inner join playlist_track pt on pt.track_id = at.track_id
-                   where playlist_id = ? and user_id = ?"""
-        return self._db.select_all(query, (_id, self._uid,))
-
-    def get_playlist_tracks(self, _id):
-        query = """select track.*
-                   from track
-                     inner join playlist_track on track_id = id
-                   where playlist_id = ? and user_id = ?"""
-        return self._db.select_all(query, (_id, self._uid,))
-
-    def get_track_artists_ids(self, _id):
-        query = """select artist_id
-                   from artist_track
-                   where track_id = ?"""
-        return [i[0] for i in self._db.select_all(query, (_id,))]
 
     def get_user_artists(self):
         query = """select a.name, count(*) as col
