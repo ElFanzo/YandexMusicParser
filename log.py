@@ -5,6 +5,8 @@ msg = {
         "from the Internet and saved to the database."
     ),
     "DB_SEARCH": "Looking for the user in the database...",
+    "DEL_ALREADY": "The user '{}' is already deleted.",
+    "DEL_SUCCESS": "The user '{}' and his data have been successfully deleted.",
     "DONE": "Done!",
     "ERR_ACCESS": "The account of the user '{}' is private!",
     "ERR_BUT_DB": "You can still get your data from the database.",

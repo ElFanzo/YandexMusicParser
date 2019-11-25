@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from log import flash
+
 
 class Artist:
     """An artist's data storing class.
@@ -163,6 +165,14 @@ class User:
         self.playlists_count = playlists_count
 
         self.__query = query
+
+    def delete(self):
+        """Delete all the user's data from the database."""
+        if self.__query.user_name:
+            self.__query.delete_user_data()
+            flash(msg="DEL_SUCCESS", login=self.login)
+        else:
+            flash(msg="DEL_ALREADY", login=self.login)
 
     def __str__(self):
         return (

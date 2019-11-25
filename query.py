@@ -221,6 +221,13 @@ class Query(BaseQuery):
 
 
 class UserQuery(BaseQuery):
+    def delete_user_data(self):
+        self._db.execute("delete from user where id = ?", (self._uid,))
+
+        self.delete_unused()
+
+        self.user_name = None
+
     def get_artist_genres(self, _id):
         query = """select distinct track.genre
                    from track
