@@ -29,7 +29,7 @@ class Client:
             try:
                 self.__service = Service(self.__login)
             except GrabConnectionError:
-                flash(msg="ERR_MSG")
+                flash(msg="ERR_NET")
             except KeyError:
                 pass
             else:
