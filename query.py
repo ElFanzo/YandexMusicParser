@@ -285,22 +285,28 @@ class UserQuery(BaseQuery):
                    order by name"""
         return self._db.select_all(query, (self._uid, genre))
 
-    def get_artists_counter(self):
+    def get_artists_counter(self, playlist_id):
         query = """select a.name, count(*) as col
                    from artist a
                      inner join artist_track at on at.artist_id = a.id
                      inner join playlist_track pt on pt.track_id = at.track_id
-                   where pt.playlist_id = 3 and pt.user_id = ?
+                   where pt.playlist_id = ? and pt.user_id = ?
                    group by a.name
                    order by col desc, a.name"""
-        return {i: j for i, j in self._db.select_all(query, (self._uid,))}
+        return {
+            i: j
+            for i, j in self._db.select_all(query, (playlist_id, self._uid,))
+        }
 
-    def get_genres_counter(self):
+    def get_genres_counter(self, playlist_id):
         query = """select genre, count(*) as col
                    from track
                      inner join playlist_track on track_id = id
-                   where genre is not null and playlist_id = 3
+                   where genre is not null and playlist_id = ?
                      and user_id = ?
                    group by genre
                    order by col desc, genre"""
-        return {i: j for i, j in self._db.select_all(query, (self._uid,))}
+        return {
+            i: j
+            for i, j in self._db.select_all(query, (playlist_id, self._uid,))
+        }
