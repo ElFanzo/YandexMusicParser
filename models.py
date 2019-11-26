@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from log import flash
+from network import Connection
 
 
 class Artist:
@@ -28,6 +29,19 @@ class Artist:
         self.tracks = tracks
         self.tracks_count = tracks_count
         self.genres = genres
+
+        self.__likes = None
+
+    def get_likes(self):
+        """Get the amount of the artist's likes."""
+        if self.__likes:
+            return self.__likes
+
+        js = Connection().get_json("artist", self.id_)
+        try:
+            return js["artist"]["likesCount"]
+        except KeyError:
+            return None
 
     def __str__(self):
         return f"Artist({self.name}, {len(self.tracks)} track(s))"
