@@ -68,6 +68,14 @@ class Playlist:
 
         self.__query = query
 
+    def get_artists_counter(self):
+        """Get a dict with {Artist name: count} items."""
+        return self.__query.get_artists_counter(self.id_)
+
+    def get_genres_counter(self):
+        """Get a dict with {Genre: count} items."""
+        return self.__query.get_genres_counter(self.id_)
+
     @staticmethod
     def __format_ms(total_ms: int) -> str:
         """Format milliseconds to the string.
@@ -173,14 +181,6 @@ class User:
             flash(msg="DEL_SUCCESS", login=self.login)
         else:
             flash(msg="DEL_ALREADY", login=self.login)
-
-    def get_artists_counter(self):
-        """Get a dict with {Artist name: count} items."""
-        return self.__query.get_artists_counter()
-
-    def get_genres_counter(self):
-        """Get a dict with {Genre: count} items."""
-        return self.__query.get_genres_counter()
 
     def __str__(self):
         return (
