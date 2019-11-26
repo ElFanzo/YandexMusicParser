@@ -1,50 +1,47 @@
 # YandexMusicParser
 
 Using this project, you can get information about:
-*  user's name
-*  artists
-*  genres
-*  tracks count
-*  total duration of all tracks
+*  _User_: name, playlists list, playlists count
+*  _Playlist_: title, tracks list, tracks count, duration, last modified datetime, artists counter, genres counter
+*  _Track_: title, artists list, artists count, release year, genre, duration
+*  _Artist_: name, tracks list, tracks count, genres, likes count
 
 from your music library on the Yandex Music website. Only a login and a **public account** are required.
 
 # Usage example
 
 ```python
-  from scraper import Listener
+  from client import Client
 
-  me = Listener(login="john_doe")
+  me = Client(login="john_doe")
+  # First, all the user's data will be saved in the database. 
+  # After that, it'll be taken from the DB.
+  # A user's data can be updated if neccessary -> me.update()
   
-  print(me.name)
+  user = me.user
+  print(user.login)
+  # john_doe
+  
+  print(user.name)
   # John Doe
   
-  print(me)
+  print(user)
   # User john_doe(John Doe, 3 playlist(s))
   
-  first = me.playlists[0]
-  
+  first = user.playlists[0]
   print(first)
   # Playlist(Мне нравится, 1000 track(s))
-
-  print(first.artists)
-  # {'Ludovico Einaudi': 25, 'Hans Zimmer': 22, 'Coldplay': 20, ...}
   
-  print(first.artists["Kygo"])
-  # 7
-  
-  print(first.genres)
-  # {'dance': 212, 'pop': 175, 'electronics': 115, ...}
-  
-  print(first.genres["house"])
-  # 50
-  
-  print(first.total_duration)
+  print(first.duration)
   # 70 h. 17 min. 36 sec.
   
-  print(first.total_duration_ms)
-  # 1234567890
+  print(first.get_artists_counter())
+  # {'Ludovico Einaudi': 25, 'Hans Zimmer': 22, 'Coldplay': 20, ...}
   
-  print(first.tracks_count)
-  # 1000
+  track = first.tracks[123]
+  print(track)
+  # Rammstein - Mein Herz Brennt
+  
+  print(track.genre)
+  # industrial
 ```
