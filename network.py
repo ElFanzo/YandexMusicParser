@@ -5,19 +5,20 @@ URLS = {
     "info": f"{BASE_URL}" "/library.jsx?owner={}",
     "playlists": f"{BASE_URL}" "/library.jsx?owner={}&filter=playlists",
     "playlist": f"{BASE_URL}" "/playlist.jsx?owner={}&kinds={}",
+    "artist": f"{BASE_URL}" "/artist.jsx?artist={}",
 }
 
 
 class Connection:
     """Connect to the Yandex Music site and download response."""
 
-    def __init__(self, subject, *args):
+    def __init__(self):
         self.__grab = Grab(transport="urllib3")
 
+    def get_json(self, subject, *args):
+        """Get response in the JSON format."""
         self.__connect(subject, *args)
 
-    def get_json(self):
-        """Get response in the JSON format."""
         return self.__grab.doc.json
 
     def __connect(self, subject, *args):
