@@ -1,4 +1,5 @@
-from grab import Grab
+from json import loads
+from urllib3 import PoolManager
 
 BASE_URL = "https://music.yandex.ru/handlers"
 URLS = {
@@ -13,15 +14,13 @@ class Connection:
     """Connect to the Yandex Music site and download response."""
 
     def __init__(self):
-        self.__grab = Grab(transport="urllib3")
+        self.__http = PoolManager()
 
     def get_json(self, subject, *args):
         """Get response in the JSON format."""
-        self.__connect(subject, *args)
+        return loads(self.__response(subject, *args))
 
-        return self.__grab.doc.json
-
-    def __connect(self, subject, *args):
-        """Connect to the Yandex Music site."""
+    def __response(self, subject, *args):
+        """Get response from the Yandex Music site."""
         url = URLS[subject].format(*args)
-        self.__grab.go(url)
+        return self.__http.request("GET", url).data

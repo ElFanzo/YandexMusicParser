@@ -1,4 +1,4 @@
-from grab.error import GrabConnectionError
+from urllib3.exceptions import MaxRetryError
 
 from log import flash
 from models import Artist, Playlist, Track, User
@@ -28,7 +28,7 @@ class Client:
         else:
             try:
                 self.__service = Service(self.__login)
-            except GrabConnectionError:
+            except MaxRetryError:
                 flash(msg="ERR_NET")
             except KeyError:
                 pass
@@ -41,7 +41,7 @@ class Client:
         flash(msg="UPD")
         try:
             self.__service.update()
-        except GrabConnectionError:
+        except MaxRetryError:
             flash(msg="ERR_NET")
             flash(msg="ERR_BUT_DB")
         except AttributeError:
