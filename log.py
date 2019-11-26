@@ -16,7 +16,7 @@ msg = {
         "Please, check your connection and try again."
     ),
     "ERR_UPD": "Update method is not available for this object!",
-    "ERR_USER": "The user '{}' does not exist!",
+    "ERR_USER": "The user '{}' does not exist or has no tracks yet.",
     "UPD": "Please, wait. Your data is being updated...",
     "USER_SUCCESS": (
         "Successfully! The user's data is accessed in the 'user' attribute."
