@@ -48,7 +48,7 @@ class Client:
 
     @staticmethod
     def __clean_login(login):
-        if not login or type(login) is not str:
+        if not login or not isinstance(login, str):
             raise LoginError()
 
         return re.sub(r"@ya\w{,4}\.\w{,3}", "", login.strip().lower())
