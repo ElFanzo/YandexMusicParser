@@ -1,3 +1,5 @@
+import re
+
 from urllib3.exceptions import MaxRetryError, TimeoutError
 
 from exceptions import LoginError, NetworkError
@@ -49,7 +51,7 @@ class Client:
         if not login or type(login) is not str:
             raise LoginError()
 
-        return login.strip().lower().replace("@yandex.ru", "")
+        return re.sub(r"@ya\w{,4}\.\w{,3}", "", login.strip().lower())
 
     def __set_data(self):
         """Create a user and other entities from the database data."""
