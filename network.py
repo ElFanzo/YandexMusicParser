@@ -1,4 +1,5 @@
 from json import loads
+
 from urllib3 import PoolManager
 
 BASE_URL = "https://music.yandex.ru/handlers"
