@@ -1,5 +1,6 @@
-from urllib3.exceptions import MaxRetryError
+from urllib3.exceptions import MaxRetryError, TimeoutError
 
+from exceptions import LoginError, NetworkError
 from log import flash
 from models import Artist, Playlist, Track, User
 from query import Query, UserQuery
@@ -21,34 +22,34 @@ class Client:
     def __init__(self, login: str):
         self.user = None
 
+        self.__login = self.__clean_login(login)
+
         try:
-            self.__login = login.strip().lower().replace("@yandex.ru", "")
-        except AttributeError:
-            flash(msg="ERR_LOGIN")
+            self.__service = Service(self.__login)
+        except (MaxRetryError, TimeoutError):
+            raise NetworkError from None
         else:
-            try:
-                self.__service = Service(self.__login)
-            except MaxRetryError:
-                flash(msg="ERR_NET")
-            except KeyError:
-                pass
-            else:
-                self.__set_data()
-                flash(msg="USER_SUCCESS")
+            self.__set_data()
+            flash(msg="USER_SUCCESS")
 
     def update(self):
         """Update client's data."""
         flash(msg="UPD")
+
         try:
             self.__service.update()
-        except MaxRetryError:
-            flash(msg="ERR_NET")
-            flash(msg="ERR_BUT_DB")
-        except AttributeError:
-            flash(msg="ERR_UPD")
-        else:
-            self.__set_data()
-            flash(msg="DONE")
+        except (MaxRetryError, TimeoutError):
+            raise NetworkError from None
+
+        self.__set_data()
+        flash(msg="DONE")
+
+    @staticmethod
+    def __clean_login(login):
+        if not login or type(login) is not str:
+            raise LoginError()
+
+        return login.strip().lower().replace("@yandex.ru", "")
 
     def __set_data(self):
         """Create a user and other entities from the database data."""

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from exceptions import LikesError, ProfileError
 from log import flash
 from network import Connection
 
@@ -38,10 +39,14 @@ class Artist:
             return self.__likes
 
         js = Connection().get_json("artist", self.id_)
-        try:
-            return js["artist"]["likesCount"]
-        except KeyError:
-            return None
+
+        artist = js.get("artist")
+        if not artist:
+            raise ProfileError(self.name)
+
+        likes = artist.get("likesCount")
+        if not likes:
+            raise LikesError(self.name)
 
     def __str__(self):
         return f"Artist({self.name}, {len(self.tracks)} track(s))"

@@ -1,3 +1,4 @@
+from exceptions import AccessError, NoTracksError, UserDoesNotExistError
 from log import flash
 from network import Connection
 from query import Query
@@ -136,18 +137,18 @@ class Service:
         self.__query.insert_user(uid, self.__login, name, playlists_count)
 
     def __check(self):
-        """Check if profile is private or does not exist."""
+        """Check a user's profile for the possibility to get his data."""
         js = Connection().get_json("info", self.__login)
 
-        try:
-            access = js["visibility"]
-        except KeyError:
-            flash(msg="ERR_USER", login=self.__login)
-            raise
+        access = js.get("visibility")
+        if not access:
+            raise UserDoesNotExistError(self.__login)
 
-        if access == "private":
-            flash(msg="ERR_ACCESS", login=self.__login)
-            raise KeyError
+        if access != "public":
+            raise AccessError(self.__login)
+
+        if not js["hasTracks"]:
+            raise NoTracksError(self.__login)
 
     def __common_info(self):
         return Connection().get_json("playlists", self.__login)
