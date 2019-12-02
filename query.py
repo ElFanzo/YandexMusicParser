@@ -100,7 +100,7 @@ class Query(BaseQuery):
             f"""delete from playlist_track
                 where track_id in ({signs})
                   and user_id = ? and playlist_id = ?""",
-            (ids, self._uid, playlist_id)
+            (*ids, self._uid, playlist_id)
         )
 
     def get_artist_genres(self, _id):
