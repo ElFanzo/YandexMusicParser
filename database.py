@@ -1,5 +1,4 @@
-from os import remove
-from sqlite3 import connect, OperationalError
+from sqlite3 import connect
 
 
 class DataCtx:
@@ -58,24 +57,6 @@ class DataCtx:
         :return: a list of selected records
         """
         return self.__select(query, *params, is_all=True)
-
-    def save_to_file(self, path: str):
-        """Save all data from the Teachers table to a file.
-
-        :param path: the path to a file
-        """
-        try:
-            with open(path, "w", encoding="utf-8") as out:
-                for row in self.select("select * from table"):
-                    out.write("|".join([str(i) for i in row]) + "\n")
-        except OperationalError:
-            remove(path)
-            print(
-                "There is no table in the database yet! "
-                "Try again after creating the table."
-            )
-        else:
-            print("All data has been successfully saved to the file.")
 
     def __exec(self, query: str, *params, is_many: bool = False):
         if is_many:
