@@ -2,15 +2,9 @@ from sqlite3 import connect
 
 
 class DataCtx:
-    """Data context class for storing scraped data in the database.
-
-    rowcount
-      Count of inserted, changed or deleted records.
-    """
+    """Data context class for storing scraped data in the database."""
 
     def __init__(self):
-        self.rowcount = 0
-
         self.__conn = connect("cache/YandexMusicData.db")
         self.__cursor = self.__conn.cursor()
 
@@ -19,7 +13,6 @@ class DataCtx:
 
         :param query: a query string
         :param params: a query parameters
-        :return: rowcount
         """
         return self.__exec(query, *params)
 
@@ -28,7 +21,6 @@ class DataCtx:
 
         :param query: a query string
         :param params: a query parameters
-        :return: rowcount
         """
         return self.__exec(query, *params, is_many=True)
 
@@ -63,10 +55,8 @@ class DataCtx:
             self.__cursor.executemany(query, *params)
         else:
             self.__cursor.execute(query, *params)
-        self.rowcount = self.__cursor.rowcount
-        self.__conn.commit()
 
-        return self.rowcount
+        self.__conn.commit()
 
     def __select(self, query: str, *params, is_all: bool = False):
         self.__cursor.execute(query, *params)
@@ -74,9 +64,6 @@ class DataCtx:
             rows = self.__cursor.fetchall()
         else:
             rows = self.__cursor.fetchone()
-
-        if rows:
-            self.rowcount = len(rows)
 
         return rows
 
