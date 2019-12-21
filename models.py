@@ -23,6 +23,15 @@ class Artist:
         genres:
     """
 
+    __slots__ = (
+        "id_",
+        "name",
+        "tracks",
+        "tracks_count",
+        "genres",
+        "__likes"
+    )
+
     def __init__(self, id_: int, name: str, tracks: list,
                  tracks_count: int, genres: list):
         self.id_ = id_
@@ -73,6 +82,17 @@ class Playlist:
         duration_ms: total durartion in milliseconds
         modified:
     """
+
+    __slots__ = (
+        "id_",
+        "title",
+        "tracks",
+        "tracks_count",
+        "duration_ms",
+        "duration",
+        "modified",
+        "__query"
+    )
 
     def __init__(self, query, id_: int, title: str, tracks_count: int,
                  duration: int, modified: str, tracks: list):
@@ -140,6 +160,17 @@ class Track:
         duration_ms: duration in milliseconds
     """
 
+    __slots__ = (
+        "id_",
+        "title",
+        "artists",
+        "artists_count",
+        "year",
+        "genre",
+        "duration_ms",
+        "duration"
+    )
+
     def __init__(self, id_: int, title: str, year: int, genre: str,
                  duration: int, artists: list, artists_count: int):
         self.id_ = id_
@@ -183,6 +214,14 @@ class User:
         playlists:
         playlists_count:
     """
+
+    __slots__ = (
+        "login",
+        "name",
+        "playlists",
+        "playlists_count",
+        "__query"
+    )
 
     def __init__(self, query, login: str, playlists_count: int,
                  playlists: list):
