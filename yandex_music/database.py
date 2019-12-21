@@ -5,7 +5,7 @@ class DataCtx:
     """Data context class for storing scraped data in the database."""
 
     def __init__(self):
-        self.__conn = connect("cache/YandexMusicData.db")
+        self.__conn = connect("yandex_music/cache/YandexMusicData.db")
         self.__cursor = self.__conn.cursor()
 
     def execute(self, query: str, *params):

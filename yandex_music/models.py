@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from exceptions import LikesError, ProfileError
-from log import flash
-from network import Connection
+from .exceptions import LikesError, ProfileError
+from .log import flash
+from .network import Connection
 
 
 class Artist:

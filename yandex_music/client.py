@@ -2,11 +2,11 @@ import re
 
 from urllib3.exceptions import MaxRetryError, TimeoutError
 
-from exceptions import LoginError, NetworkError
-from log import flash
-from models import Artist, Playlist, Track, User
-from query import Query, UserQuery
-from service import Service
+from .exceptions import LoginError, NetworkError
+from .log import flash
+from .models import Artist, Playlist, Track, User
+from .query import Query, UserQuery
+from .service import Service
 
 
 class Client:

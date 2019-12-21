@@ -1,4 +1,4 @@
-from database import DataCtx
+from .database import DataCtx
 
 
 class BaseQuery:
