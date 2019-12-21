@@ -158,9 +158,7 @@ class Service:
 
         self.__add_user(common)
 
-        self.__add_playlists(common, common["playlistIds"])
-
-        self.__add_playlists_tracks(common["playlistIds"])
+        self.__add_new_playlists(common, common["playlistIds"])
 
     @staticmethod
     def __get_differences(local_ids, remote_ids):
