@@ -11,7 +11,7 @@ from your music library on the Yandex Music website. Only a login and a **public
 # Usage example
 
 ```python
-  from client import Client
+  from yandex_music import Client
 
   me = Client(login="john_doe")
   # First, all the user's data will be saved in the database. 
