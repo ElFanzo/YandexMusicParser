@@ -1,5 +1,6 @@
 # YandexMusicParser
 
+## About
 Using this project, you can get information about:
 *  _User_: name, playlists list, playlists count
 *  _Playlist_: title, tracks list, tracks count, duration, last modified datetime, artists counter, genres counter
@@ -8,7 +9,15 @@ Using this project, you can get information about:
 
 from your music library on the Yandex Music website. Only a login and a **public account** are required.
 
-# Usage example
+## Installation
+- Clone the repo: <br>
+  `git clone https://github.com/ElFanzo/YandexMusicParser.git`;
+- Install Python >=3.6;
+- Install pip;
+- Install dependencies: <br>
+  `pip install -r requirements.txt`
+
+## Usage example
 
 ```python
   from yandex_music import Client
