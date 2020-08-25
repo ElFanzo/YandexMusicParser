@@ -29,7 +29,7 @@ class Artist:
         "tracks",
         "tracks_count",
         "genres",
-        "__likes"
+        "_likes"
     )
 
     def __init__(self, id_: int, name: str, tracks: list,
@@ -40,12 +40,12 @@ class Artist:
         self.tracks_count = tracks_count
         self.genres = genres
 
-        self.__likes = None
+        self._likes = None
 
     def get_likes(self):
         """Get the amount of the artist's likes."""
-        if self.__likes:
-            return self.__likes
+        if self._likes:
+            return self._likes
 
         js = Connection().get_json("artist", self.id_)
 
@@ -91,7 +91,7 @@ class Playlist:
         "duration_ms",
         "duration",
         "modified",
-        "__query"
+        "_query"
     )
 
     def __init__(self, query, id_: int, title: str, tracks_count: int,
@@ -101,22 +101,22 @@ class Playlist:
         self.tracks = tracks
         self.tracks_count = tracks_count
         self.duration_ms = duration
-        self.duration = Playlist.__format_ms(self.duration_ms)
-        self.modified = Playlist.__utc_to_local(modified) \
+        self.duration = Playlist._format_ms(self.duration_ms)
+        self.modified = Playlist._utc_to_local(modified) \
             if modified else None
 
-        self.__query = query
+        self._query = query
 
     def get_artists_counter(self):
         """Get a dict with {Artist name: count} items."""
-        return self.__query.get_artists_counter(self.id_)
+        return self._query.get_artists_counter(self.id_)
 
     def get_genres_counter(self):
         """Get a dict with {Genre: count} items."""
-        return self.__query.get_genres_counter(self.id_)
+        return self._query.get_genres_counter(self.id_)
 
     @staticmethod
-    def __format_ms(total_ms: int) -> str:
+    def _format_ms(total_ms: int) -> str:
         """Format milliseconds to the string.
 
         :param total_ms: a number of milliseconds
@@ -129,7 +129,7 @@ class Playlist:
         return f"{hours} h. {minutes % 60} min. {seconds % 60} sec."
 
     @staticmethod
-    def __utc_to_local(date_utc: str) -> datetime:
+    def _utc_to_local(date_utc: str) -> datetime:
         date_utc = datetime.fromisoformat(date_utc)
         return date_utc.replace(tzinfo=timezone.utc).astimezone()
 
@@ -180,10 +180,10 @@ class Track:
         self.year = year
         self.genre = genre
         self.duration_ms = duration
-        self.duration = Track.__format_ms(self.duration_ms)
+        self.duration = Track._format_ms(self.duration_ms)
 
     @staticmethod
-    def __format_ms(total_ms: int) -> str:
+    def _format_ms(total_ms: int) -> str:
         """Format milliseconds to the string.
 
         :param total_ms: a number of milliseconds
@@ -220,7 +220,7 @@ class User:
         "name",
         "playlists",
         "playlists_count",
-        "__query"
+        "_query"
     )
 
     def __init__(self, query, login: str, playlists_count: int,
@@ -230,12 +230,12 @@ class User:
         self.playlists = playlists
         self.playlists_count = playlists_count
 
-        self.__query = query
+        self._query = query
 
     def delete(self):
         """Delete all the user's data from the database."""
-        if self.__query.user_name:
-            self.__query.delete_user_data()
+        if self._query.user_name:
+            self._query.delete_user_data()
             flash(msg="DEL_SUCCESS", login=self.login)
         else:
             flash(msg="DEL_ALREADY", login=self.login)

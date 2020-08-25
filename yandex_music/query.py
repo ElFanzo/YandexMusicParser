@@ -6,35 +6,35 @@ class BaseQuery:
 
     def __init__(self, login: str):
         self._db = DataCtx()
-        self.__init_tables()
+        self._init_tables()
 
-        self.user_name, self._uid = self.__get_user_data(login)
+        self.user_name, self._uid = self._get_user_data(login)
 
     def delete_unused(self):
-        self.__delete_unused_tracks()
-        self.__delete_unused_artists()
+        self._delete_unused_tracks()
+        self._delete_unused_artists()
 
-    def __delete_unused_artists(self):
+    def _delete_unused_artists(self):
         self._db.execute(
             """delete from artist
                where id not in (
                  select artist_id from artist_track)"""
         )
 
-    def __delete_unused_tracks(self):
+    def _delete_unused_tracks(self):
         self._db.execute(
             """delete from track
                where id not in (
                  select track_id from playlist_track)"""
         )
 
-    def __get_user_data(self, login: str):
+    def _get_user_data(self, login: str):
         data = self._db.select(
             "select name, id from user where login = ?", (login,)
         )
         return data if data else (None, None)
 
-    def __init_tables(self):
+    def _init_tables(self):
         self._db.execute_script(
             """PRAGMA foreign_keys = on;
 
@@ -126,7 +126,7 @@ class Query(BaseQuery):
         ]
 
     def get_artists_ids(self):
-        return self.__get_ids("artist")
+        return self._get_ids("artist")
 
     def get_modified(self, _id: int):
         return self._db.select(
@@ -180,7 +180,7 @@ class Query(BaseQuery):
         return [i[0] for i in self._db.select_all(query, (_id,))]
 
     def get_tracks_ids(self):
-        return self.__get_ids("track")
+        return self._get_ids("track")
 
     def get_user_playlists(self):
         query = """select id, title, tracks_count, duration, modified
@@ -196,13 +196,13 @@ class Query(BaseQuery):
         self._db.execute_many("insert into artist values (?, ?)", params)
 
     def insert_playlist_tracks(self, params: list):
-        params = self.__get_params_with_uid(params)
+        params = self._get_params_with_uid(params)
         self._db.execute_many(
             "insert into playlist_track values (?, ?, ?)", params
         )
 
     def insert_playlists(self, params: list):
-        params = self.__get_params_with_uid(params)
+        params = self._get_params_with_uid(params)
         self._db.execute_many(
             "insert into playlist values (?, ?, ?, ?, ?, ?)", params
         )
@@ -258,10 +258,10 @@ class Query(BaseQuery):
             (self._uid, _id, self._uid, _id)
         )
 
-    def __get_ids(self, table: str):
+    def _get_ids(self, table: str):
         return [i[0] for i in self._db.select_all(f"select id from {table}")]
 
-    def __get_params_with_uid(self, params: list):
+    def _get_params_with_uid(self, params: list):
         return [tuple([self._uid, *i]) for i in params]
 
 
